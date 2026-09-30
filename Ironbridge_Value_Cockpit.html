@@ -1,0 +1,1007 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ironbridge Value Cockpit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --page:#eef1f3; --surface:#ffffff; --surface-2:#f6f8f9; --ink:#14191e; --ink-2:#4b545e; --muted:#838c96;
+  --hair:#dde2e7; --axis:#c4cbd2; --grid:#e8ecef;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300; --s7:#4a3aa7; --s8:#e34948;
+  --pos:#2a78d6; --neg:#e34948; --total:#3b434c; --mid:#f0efec;
+  --good:#0ca30c; --warn:#fab219; --serious:#ec835a; --crit:#d03b3b; --good-ink:#006300;
+  --seq1:#cde2fb; --seq2:#9ec5f4; --seq3:#5598e7; --seq4:#256abf; --seq5:#104281;
+  --accent:#1c5cab; --accent-wash:rgba(42,120,214,.10); --ring:rgba(20,25,30,.10);
+  --f-display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --page:#0d1013; --surface:#161a1f; --surface-2:#1c2127; --ink:#f1f3f5; --ink-2:#b6bec7; --muted:#8a939d;
+    --hair:#2a3138; --axis:#3a424a; --grid:#232a31;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+    --pos:#3987e5; --neg:#e66767; --total:#aab3bd; --mid:#383835;
+    --good-ink:#0ca30c; --seq1:#184f95; --seq2:#1c5cab; --seq3:#2a78d6; --seq4:#5598e7; --seq5:#9ec5f4;
+    --accent:#6da7ec; --accent-wash:rgba(57,135,229,.16); --ring:rgba(255,255,255,.10);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --page:#0d1013; --surface:#161a1f; --surface-2:#1c2127; --ink:#f1f3f5; --ink-2:#b6bec7; --muted:#8a939d;
+  --hair:#2a3138; --axis:#3a424a; --grid:#232a31;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+  --pos:#3987e5; --neg:#e66767; --total:#aab3bd; --mid:#383835;
+  --good-ink:#0ca30c; --seq1:#184f95; --seq2:#1c5cab; --seq3:#2a78d6; --seq4:#5598e7; --seq5:#9ec5f4;
+  --accent:#6da7ec; --accent-wash:rgba(57,135,229,.16); --ring:rgba(255,255,255,.10);
+}
+*{box-sizing:border-box}
+body{background:var(--page);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45;margin:0}
+.wrap{max-width:1320px;margin:0 auto;padding-inline:20px;padding-block:0 48px}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--page);border-bottom:1px solid var(--hair)}
+.topin{max-width:1320px;margin:0 auto;padding:12px 20px 0;display:flex;flex-direction:column;gap:10px}
+.brand{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;justify-content:space-between}
+.brand h1{font-family:var(--f-display);font-weight:700;font-size:24px;letter-spacing:.01em;margin:0;text-wrap:balance}
+.brand h1 span{color:var(--muted);font-weight:500}
+.brand .meta{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.seg{display:inline-flex;border:1px solid var(--hair);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{font:500 13px var(--f-body);color:var(--ink-2);background:transparent;border:0;padding:6px 12px;cursor:pointer;border-right:1px solid var(--hair)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.seg button:focus-visible,.tabs button:focus-visible,.btn:focus-visible,input:focus-visible{outline:2px solid var(--s1);outline-offset:2px}
+.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;margin-bottom:-1px}
+.tabs button{font:500 13.5px var(--f-body);color:var(--ink-2);background:none;border:0;border-bottom:2px solid transparent;padding:8px 12px 10px;cursor:pointer;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+section.tab{display:none;padding-top:20px}
+section.tab.on{display:block}
+.grid{display:grid;gap:14px}
+.g12{grid-template-columns:repeat(12,minmax(0,1fr))}
+.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+@media (max-width:1000px){.c3{grid-column:span 6}.c4,.c5,.c7,.c8{grid-column:span 12}.c6{grid-column:span 12}}
+@media (max-width:560px){.c3{grid-column:span 12}.wrap{padding-inline:16px}.topin{padding-inline:16px}}
+.card{background:var(--surface);border:1px solid var(--hair);border-radius:10px;padding:16px 16px 14px;min-width:0}
+.card h3{font-family:var(--f-display);font-weight:600;font-size:16px;margin:0 0 2px;text-wrap:balance}
+.card .sub{font-size:12.5px;color:var(--muted);margin:0 0 10px}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.hero{display:flex;flex-direction:column;gap:6px}
+.hero .v{font-size:56px;font-weight:600;line-height:1;letter-spacing:-.01em}
+.hero .v small{font-size:18px;font-weight:500;color:var(--ink-2);margin-left:6px}
+.delta{font-size:13px;font-weight:600}
+.delta.up{color:var(--good-ink)} .delta.down{color:var(--crit)}
+.tile .l{font-size:12.5px;color:var(--ink-2)}
+.tile .v{font-size:26px;font-weight:600;margin-top:2px}
+.tile .d{font-size:12px;color:var(--muted);margin-top:2px}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{background:var(--surface-2);border-radius:8px;padding:10px 12px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--ink-2);margin:4px 0 6px}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.legend i.sq{width:10px;height:10px;border-radius:2px}
+.chart{width:100%;position:relative}
+svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:var(--f-body);fill:var(--muted);font-size:11px}
+svg .val{fill:var(--ink);font-weight:600}
+svg .lab{fill:var(--ink-2)}
+.tip{position:fixed;pointer-events:none;z-index:50;background:var(--ink);color:var(--surface);font-size:12px;padding:6px 8px;border-radius:6px;max-width:280px;opacity:0;transition:opacity .08s}
+.tip.on{opacity:1}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--hair);vertical-align:top}
+th{font-weight:600;color:var(--ink-2);font-size:11.5px;letter-spacing:.02em;background:var(--surface-2)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tscroll{overflow-x:auto}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;border:1px solid var(--hair);white-space:nowrap}
+.pill .dot{width:8px;height:8px;border-radius:50%}
+.pill.pass .dot{background:var(--good)} .pill.fail .dot{background:var(--crit)} .pill.watch .dot{background:var(--warn)}
+.chip{display:inline-block;font:500 11px var(--f-mono);letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:4px;background:var(--surface-2);color:var(--ink-2);border:1px solid var(--hair)}
+.chip.stop{border-color:var(--crit);color:var(--crit)} .chip.fix{border-color:var(--serious);color:var(--ink)} .chip.scale{border-color:var(--good);color:var(--good-ink)}
+ul.clean{margin:0;padding-left:18px} ul.clean li{margin:3px 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.quad{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:560px){.two,.quad{grid-template-columns:1fr}}
+.qbox{background:var(--surface-2);border-radius:8px;padding:10px 12px}
+.qbox h4{margin:0 0 4px;font-size:13px;font-family:var(--f-display);font-weight:600}
+.subnav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.subnav button{font:500 12.5px var(--f-body);border:1px solid var(--hair);background:var(--surface);color:var(--ink-2);border-radius:999px;padding:5px 12px;cursor:pointer}
+.subnav button[aria-pressed="true"]{background:var(--accent-wash);color:var(--ink);border-color:var(--s1)}
+.pane{display:none}.pane.on{display:block}
+.heat td.h{text-align:center;font-weight:600;font-variant-numeric:tabular-nums}
+.slider{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--hair)}
+.slider label{font-size:12.5px;color:var(--ink-2)}
+.slider output{font:600 12.5px var(--f-body);font-variant-numeric:tabular-nums}
+.slider input{grid-column:1 / -1;width:100%;accent-color:var(--s1)}
+.btn{font:500 12.5px var(--f-body);border:1px solid var(--hair);background:var(--surface);color:var(--ink);border-radius:6px;padding:6px 10px;cursor:pointer}
+.note{font-size:12px;color:var(--muted);margin-top:8px}
+.meter{height:8px;border-radius:4px;background:var(--seq1);overflow:hidden}
+.meter > span{display:block;height:100%;background:var(--s1);border-radius:4px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:12.5px}
+.kv b{font-weight:600}
+.foot{font-size:11.5px;color:var(--muted);margin-top:24px;border-top:1px solid var(--hair);padding-top:10px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<header class="top">
+  <div class="topin">
+    <div class="brand">
+      <h1>Ironbridge Value Cockpit <span>| digital turnaround, Jan 2026 to Jun 2027</span></h1>
+      <div class="meta">USD million · baseline FY2025 · exit = Q2-27 × 4</div>
+    </div>
+    <div class="bar">
+      <div class="seg" role="group" aria-label="Scenario" id="scen">
+        <button data-s="Status quo" aria-pressed="false">Status quo</button>
+        <button data-s="Base" aria-pressed="true">Recommended</button>
+        <button data-s="Bear" aria-pressed="false">Bear</button>
+        <button data-s="Bull" aria-pressed="false">Bull</button>
+        <button data-s="Custom" aria-pressed="false">Custom</button>
+      </div>
+      <div class="eyebrow" id="scenLabel">Scenario: recommended plan</div>
+    </div>
+    <nav class="tabs" role="tablist" id="tabs">
+      <button role="tab" data-t="cockpit" aria-selected="true">Cockpit</button>
+      <button role="tab" data-t="diag" aria-selected="false">Diagnosis</button>
+      <button role="tab" data-t="lab" aria-selected="false">Strategy lab</button>
+      <button role="tab" data-t="port" aria-selected="false">Portfolio</button>
+      <button role="tab" data-t="fin" aria-selected="false">Financials &amp; risk</button>
+      <button role="tab" data-t="road" aria-selected="false">Roadmap &amp; KPIs</button>
+      <button role="tab" data-t="sand" aria-selected="false">What-if sandbox</button>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+<!-- COCKPIT -->
+<section class="tab on" id="t-cockpit">
+  <div class="grid g12">
+    <div class="card c4 hero">
+      <div class="eyebrow">Exit EBITDA run-rate, June 2027</div>
+      <div class="v" id="heroV">91.7<small>7.7% margin</small></div>
+      <div class="delta up" id="heroD">+52.7 vs status quo (39.0)</div>
+      <div class="note">2025 EBITDA was 25.0 (2.1%). The run-rate excludes one-off costs.</div>
+      <div id="gates" style="display:flex;flex-direction:column;gap:6px;margin-top:8px"></div>
+    </div>
+    <div class="card c8">
+      <h3>Headline metrics</h3>
+      <p class="sub">Selected scenario; the delta compares with the status quo.</p>
+      <div class="tiles" id="tiles"></div>
+    </div>
+    <div class="card c6">
+      <h3>EBITDA run-rate by quarter</h3>
+      <p class="sub">Quarter EBITDA excluding one-offs × 4; Q4-25 is the FY2025 actual</p>
+      <div class="legend" id="lgE"></div>
+      <div class="chart" id="chE"></div>
+    </div>
+    <div class="card c6">
+      <h3>Net debt path</h3>
+      <p class="sub">Cash held at 30; free cash flow funds or adds to debt</p>
+      <div class="legend" id="lgD"></div>
+      <div class="chart" id="chD"></div>
+    </div>
+    <div class="card c7">
+      <h3>EBITDA bridge, 2025 to exit run-rate</h3>
+      <p class="sub">Themes A to E net of their run costs</p>
+      <div class="chart" id="chBridge"></div>
+    </div>
+    <div class="card c5">
+      <h3>Segment EBITDA margin</h3>
+      <p class="sub">2025 reported against the exit run-rate</p>
+      <div class="legend"><span><i class="sq" style="background:var(--axis)"></i>2025</span><span><i class="sq" style="background:var(--s1)"></i>Exit run-rate</span></div>
+      <div class="chart" id="chSeg"></div>
+      <div class="note" id="acVal"></div>
+    </div>
+  </div>
+</section>
+
+<!-- DIAGNOSIS -->
+<section class="tab" id="t-diag">
+  <div class="grid g12">
+    <div class="card c7">
+      <h3>Where 97 of EBITDA went, 2022 to 2025</h3>
+      <p class="sub">Margin squeeze 55%, net digital cost 28%, overhead creep 28%</p>
+      <div class="chart" id="chWalk"></div>
+    </div>
+    <div class="card c5">
+      <h3>Balance-sheet stress, FY2025</h3>
+      <p class="sub">Why the plan must be self-funding</p>
+      <div class="tiles" style="grid-template-columns:repeat(2,minmax(0,1fr))" id="stress"></div>
+    </div>
+    <div class="card c12">
+      <h3>Factory of the Future scorecard</h3>
+      <p class="sub">Share of the targeted improvement achieved and the adoption signal behind it</p>
+      <div class="grid g12" id="pilots"></div>
+    </div>
+    <div class="card c6">
+      <h3>Segments before and after allocated digital cost</h3>
+      <p class="sub">2025 EBITDA margin; allocation by plants covered and central cost by revenue</p>
+      <div class="legend"><span><i class="sq" style="background:var(--axis)"></i>Reported</span><span><i class="sq" style="background:var(--s1)"></i>Underlying, ex digital</span></div>
+      <div class="chart" id="chUnder"></div>
+    </div>
+    <div class="card c6">
+      <h3>Working-capital days, 2022 to 2025</h3>
+      <p class="sub">Inventory days rose 13 while revenue grew 3.5%</p>
+      <div class="legend" id="lgWC"></div>
+      <div class="chart" id="chWC"></div>
+    </div>
+    <div class="card c6">
+      <h3>Margin benchmark: the haves and have-nots</h3>
+      <p class="sub">Latest reported margin, %; Ironbridge segments in blue</p>
+      <div class="chart" id="chBench"></div>
+    </div>
+    <div class="card c6">
+      <h3>Capability gap against leaders</h3>
+      <p class="sub">What best practice has and what Ironbridge has today</p>
+      <div class="tscroll"><table id="haves"></table></div>
+    </div>
+  </div>
+</section>
+
+<!-- STRATEGY LAB -->
+<section class="tab" id="t-lab">
+  <div class="subnav" id="labnav">
+    <button data-p="out" aria-pressed="true">Outside-in</button>
+    <button data-p="in" aria-pressed="false">Inside-out</button>
+    <button data-p="grow" aria-pressed="false">Portfolio and growth</button>
+    <button data-p="ops" aria-pressed="false">Operations and supply chain</button>
+    <button data-p="dig" aria-pressed="false">Digital playbooks</button>
+  </div>
+  <div class="pane on" id="p-out"><div class="grid g12">
+    <div class="card c12"><h3>PESTEL</h3><p class="sub">External forces and what they mean for the plan</p><div class="tscroll"><table id="pestel"></table></div></div>
+    <div class="card c6"><h3>Five Forces intensity by segment</h3><p class="sub">1 = weak, 5 = intense</p><div class="tscroll"><table class="heat" id="porter"></table></div><div id="porterNotes" class="note"></div></div>
+    <div class="card c6"><h3>Strategy canvas, Industrial Equipment</h3><p class="sub">Blue-ocean move: raise service and monitoring, create outcome guarantees</p><div class="legend" id="lgCanvas"></div><div class="chart" id="chCanvas"></div></div>
+  </div></div>
+  <div class="pane" id="p-in"><div class="grid g12">
+    <div class="card c6"><h3>SWOT</h3><p class="sub">FY2025 position</p><div class="quad" id="swot"></div></div>
+    <div class="card c6"><h3>VRIO and resource-based view</h3><p class="sub">Valuable, rare, inimitable, organised</p><div class="tscroll"><table id="vrio"></table></div></div>
+    <div class="card c6"><h3>Cost and profit tree, FY2025</h3><p class="sub">Where the money goes</p><div class="tscroll"><table id="costtree"></table></div></div>
+    <div class="card c6"><h3>Value chain map of the initiatives</h3><p class="sub">Primary and support activities</p><div class="tscroll"><table id="vchain"></table></div></div>
+  </div></div>
+  <div class="pane" id="p-grow"><div class="grid g12">
+    <div class="card c6"><h3>Growth-margin portfolio (adapted BCG)</h3><p class="sub">Hollow dot 2023, bubble 2025 (size = revenue), solid dot June 2027 target; relative share is not in the exhibits</p><div class="chart" id="chBCG"></div><div id="bcgNotes" class="note"></div></div>
+    <div class="card c6"><h3>Ansoff growth options</h3><p class="sub">What each quadrant funds</p><div class="quad" id="ansoff"></div></div>
+    <div class="card c12"><h3>ERRC grid</h3><p class="sub">Eliminate, reduce, raise, create</p><div class="grid g12" id="errc"></div></div>
+  </div></div>
+  <div class="pane" id="p-ops"><div class="grid g12">
+    <div class="card c6"><h3>Strategic fit: efficiency against responsiveness</h3><p class="sub">Arrows run from today to the June 2027 target (index 0-100)</p><div class="chart" id="chFit"></div></div>
+    <div class="card c6"><h3>Production strategy by segment</h3><p class="sub">Implied uncertainty decides the supply chain</p><div class="tscroll"><table id="fit"></table></div></div>
+    <div class="card c7"><h3>SCOR diagnosis</h3><p class="sub">Plan, source, make, deliver, return, enable</p><div class="tscroll"><table id="scor"></table></div></div>
+    <div class="card c5"><h3>SCOR performance attributes</h3><p class="sub">Today against target</p><div class="tscroll"><table id="scorattr"></table></div></div>
+    <div class="card c12"><h3>Theory of Constraints, five focusing steps</h3><p class="sub">The Group constraint is cash and data, not capacity</p><div class="grid g12" id="toc"></div></div>
+  </div></div>
+  <div class="pane" id="p-dig"><div class="grid g12">
+    <div class="card c12"><h3>Five domains of digital transformation (Rogers)</h3><p class="sub">Customers, competition, data, innovation, value</p><div class="tscroll"><table id="rogers"></table></div></div>
+    <div class="card c12"><h3>Value Proposition Roadmap by customer type</h3><p class="sub">Core, weakened, disrupted and new value elements</p><div class="tscroll"><table id="vpr"></table></div></div>
+    <div class="card c6"><h3>BUILD barrier scores (Herbert)</h3><p class="sub">1 = major barrier, 5 = strength; red marks the barriers the plan attacks first</p><div class="chart" id="chBarrier"></div></div>
+    <div class="card c6"><h3>BUILD stages on the roadmap</h3><p class="sub">Bridge, Uncover, Iterate, Leverage, Disseminate</p><div class="tscroll"><table id="build"></table></div></div>
+    <div class="card c6"><h3>Industry 4.0 maturity, 13 fields</h3><p class="sub">0 absence, 1 existence, 2 survival, 3 maturity; today to June 2027</p><div class="chart" id="chMat"></div></div>
+    <div class="card c6"><h3>Six enablers (roadmap methodology)</h3><p class="sub">Maturity 1-5, today to June 2027</p><div class="chart" id="chEnab"></div><div class="tscroll" style="margin-top:8px"><table id="enab"></table></div></div>
+    <div class="card c6"><h3>Uptime as a smart connected product</h3><p class="sub">Value types and IoT layers</p><div id="smart"></div></div>
+    <div class="card c6"><h3>Auto Components response to disruption</h3><p class="sub">Disruptive Response Planner</p><div class="tscroll"><table id="disrupt"></table></div></div>
+  </div></div>
+</section>
+
+<!-- PORTFOLIO -->
+<section class="tab" id="t-port">
+  <div class="grid g12">
+    <div class="card c12"><h3>Verdicts on the existing programme</h3><p class="sub">Stop, fix, scale</p><div class="grid g12" id="verdicts"></div></div>
+    <div class="card c6"><h3>Impact against ease of implementation</h3><p class="sub">Average of 5 impact and 6 ease criteria, 1-3</p><div class="chart" id="chIE"></div></div>
+    <div class="card c6"><h3>Portfolio optimiser</h3><p class="sub">Risk-adjusted NPV 2026-30 at 11%; chosen candidates in blue, rejected in red</p><div class="chart" id="chOpt"></div><div class="note" id="optNote"></div></div>
+    <div class="card c12"><h3>Initiative economics</h3><p class="sub">Run-rate at June 2027 in the selected scenario; select a header to sort</p><div class="tscroll"><table id="levers"></table></div></div>
+    <div class="card c12"><h3>Group-wide against business-specific</h3><p class="sub">Standardise where scale and data matter; tailor where customers differ</p><div class="grid g12" id="gvb"></div></div>
+  </div>
+</section>
+
+<!-- FINANCIALS -->
+<section class="tab" id="t-fin">
+  <div class="grid g12">
+    <div class="card c7"><h3>Quarterly P&amp;L and cash</h3><p class="sub">Selected scenario</p><div class="tscroll"><table id="qtable"></table></div></div>
+    <div class="card c5"><h3>Scenarios at a glance</h3><p class="sub">Exit run-rate EBITDA and 18-month free cash flow</p><div class="tscroll"><table id="scentable"></table></div></div>
+    <div class="card c6"><h3>Tornado</h3><p class="sub" id="tornSub">Exit EBITDA run-rate; bars show low and high cases around the base</p>
+      <div class="seg" role="group" id="tornSel" style="margin-bottom:8px"><button data-m="e" aria-pressed="true">Exit EBITDA</button><button data-m="f" aria-pressed="false">18-month FCF</button></div>
+      <div class="chart" id="chTorn"></div></div>
+    <div class="card c6"><h3>Monte Carlo, 5,000 runs</h3><p class="sub">Distribution of exit EBITDA run-rate</p><div class="chart" id="chMC"></div><div class="note" id="mcNote"></div></div>
+    <div class="card c6"><h3>Programme cash flows</h3><p class="sub">Levers only, against the 2025 cost base; working capital shown separately</p><div class="legend"><span><i class="sq" style="background:var(--s1)"></i>Benefits net of capex</span><span><i class="sq" style="background:var(--s3)"></i>Working capital</span></div><div class="chart" id="chNPV"></div></div>
+    <div class="card c6"><h3>Break-evens and robustness</h3><p class="sub">How wrong can we be?</p><div class="tiles" style="grid-template-columns:repeat(2,minmax(0,1fr))" id="bev"></div></div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section class="tab" id="t-road">
+  <div class="grid g12">
+    <div class="card c12"><h3>18-month roadmap</h3><p class="sub">Wave 1 months 1-6, wave 2 months 7-12, wave 3 months 13-18; gates at months 6, 12 and 18</p><div class="legend"><span><i class="sq" style="background:var(--s1)"></i>Wave 1</span><span><i class="sq" style="background:var(--s3)"></i>Wave 2</span><span><i class="sq" style="background:var(--s7)"></i>Wave 3</span></div><div class="tscroll"><div class="chart" id="chGantt" style="min-width:760px"></div></div></div>
+    <div class="card c12"><h3>KPI and KRA scorecard</h3><p class="sub">Baseline, month 6, month 12, month 18</p><div class="tscroll"><table id="kpis"></table></div></div>
+    <div class="card c6"><h3>Organisation and decision rights</h3><p class="sub">Business owns the value, the Value Office owns the method, finance owns the number</p><div class="kv" id="org"></div></div>
+    <div class="card c6"><h3>Risk heat map</h3><p class="sub">Likelihood against impact</p><div class="chart" id="chRisk"></div></div>
+    <div class="card c12"><h3>Risk register</h3><p class="sub">Mitigations and early-warning signals</p><div class="tscroll"><table id="risks"></table></div></div>
+  </div>
+</section>
+
+<!-- SANDBOX -->
+<section class="tab" id="t-sand">
+  <div class="grid g12">
+    <div class="card c4"><h3>Assumptions</h3><p class="sub">Every change re-runs the quarterly model and switches the scenario to Custom</p>
+      <div id="sliders"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn" id="resetBtn">Reset to recommended</button><button class="btn" id="bearBtn">Load bear</button><button class="btn" id="bullBtn">Load bull</button></div>
+    </div>
+    <div class="card c8"><h3>Live result</h3><p class="sub">Selected scenario against status quo</p>
+      <div class="tiles" id="sTiles"></div>
+      <div class="legend" id="lgS" style="margin-top:12px"></div>
+      <div class="chart" id="chS"></div>
+      <div class="chart" id="chSB" style="margin-top:10px"></div>
+    </div>
+  </div>
+</section>
+
+<div class="foot">Ironbridge Industrial Group and all company data are fictional case data. External benchmarks as cited in the appendix. Model: quarterly engine identical to the Python model (ironbridge_model.py).</div>
+</div>
+<div class="tip" id="tip" role="tooltip"></div>
+
+<script>
+const DATA = {"exhibits": {"years": [2022, 2023, 2024, 2025], "revenue": [1150, 1205, 1230, 1190], "cogs": [860, 910, 945, 930], "gross_profit": [290, 295, 285, 260], "opex": [168, 187, 215, 235], "ebitda": [122, 108, 70, 25], "da": [58, 66, 78, 90], "ebit": [64, 42, -8, -65], "finance": [24, 27, 33, 40], "net_income": [30, 11, -41, -105], "opex_personnel": [90, 95, 101, 108], "opex_selling": [35, 38, 42, 45], "opex_digital": [8, 18, 35, 48], "opex_other": [35, 36, 37, 34], "cash": [90, 75, 55, 30], "receivables": [150, 158, 168, 172], "inventory": [205, 220, 240, 255], "other_ca": [38, 40, 43, 45], "ppe": [590, 630, 660, 680], "digital_assets": [65, 100, 135, 155], "other_intangibles": [192, 191, 159, 113], "payables": [165, 178, 188, 195], "st_debt": [90, 115, 145, 180], "other_cl": [55, 58, 60, 63], "lt_debt": [470, 510, 555, 605], "equity": [520, 523, 482, 377], "seg_rev": {"AC": [610, 630, 615, 570], "IEM": [350, 375, 400, 405], "SMC": [190, 200, 215, 215]}, "seg_ebitda": {"AC": [68, 58, 30, 5], "IEM": [40, 42, 38, 33], "SMC": [14, 8, 2, -13]}, "capex": {"maintenance": [45, 45, 45], "expansion": [35, 30, 25], "fof": [50, 55, 45], "other_intang": [10, 0, 0]}, "fcf": [-72, -114, -141], "ocf": [68, 16, -26], "fof": {"PdM": {"capex_23_25": 50, "net_assets": 38, "opex": 10, "benefit": 5, "recurring": 3.0, "temp": 7.0, "committed": 1.0, "remaining_impl": 1.0, "request_capex": 8}, "Vision": {"capex_23_25": 55, "net_assets": 44, "opex": 12, "benefit": 7, "recurring": 4.0, "temp": 8.0, "committed": 1.5, "remaining_impl": 2.0, "request_capex": 12}, "SCP": {"capex_23_25": 45, "net_assets": 33, "opex": 14, "benefit": 1, "recurring": 6.0, "temp": 8.0, "committed": 2.0, "remaining_impl": 3.0, "request_capex": 10}}, "central_digital": 12.0, "ops": {"AC": {"plants": 5, "util": 0.72, "energy": 45, "labour": 95}, "IEM": {"plants": 3, "util": 0.81, "energy": 25, "labour": 60}, "SMC": {"plants": 3, "util": 0.67, "energy": 50, "labour": 25}}, "pilots": {"PdM": {"baseline": 12.0, "target": 7.0, "actual": 9.0, "adoption": 0.6, "unit": "% unplanned downtime"}, "Vision": {"baseline": 6.0, "target": 3.5, "actual": 4.8, "adoption": 0.45, "unit": "% scrap/rework"}, "SCP": {"baseline": 90.0, "target": 75.0, "actual": 94.0, "adoption": 0.35, "unit": "inventory days"}}}, "diagnosis": {"gm_2022": 0.25217391304347825, "gm_2025": 0.2184873949579832, "digital_net_2025": 35.0, "underlying_ebitda_2025": 60.0, "underlying_ebitda_2022": 130, "walk": [["EBITDA 2022", 122.0], ["Revenue growth at 2022 gross margin", 10.1], ["Gross-margin squeeze (price, energy, inputs)", -53.1], ["Digital benefits realised in cost of sales", 13.0], ["Digital and AI opex increase", -40.0], ["Non-digital personnel increase", -18.0], ["Selling and customer support increase", -10.0], ["Other overheads decrease", 1.0], ["EBITDA 2025", 25.0]], "net_debt_2025": 755, "nd_ebitda_2025": 30.2, "interest_cover_2025": 0.625, "gross_debt_2025": 785.0, "avg_debt_2025": 742.5, "cost_of_debt": 0.05387205387205387, "dio": [87.00581395348837, 88.24175824175825, 92.6984126984127, 100.08064516129032], "dso": [47.608695652173914, 47.85892116182573, 49.85365853658537, 52.75630252100841], "dpo": [70.02906976744187, 71.3956043956044, 72.61375661375662, 76.53225806451613], "ccc": [64.58543983822041, 64.70507500797957, 69.93831462124145, 76.3046896177826], "excess_inventory_vs_2022_dio": 33.31395348837208, "fof_capex_total": 150, "fof_benefit_cost_ratio_2025": 0.2708333333333333, "digital_opex_growth": 6.0, "change_mgmt_share": 0.08333333333333333, "pilot_target_capture": {"PdM": 0.6, "Vision": 0.4800000000000001, "SCP": -0.26666666666666666}, "pdm_value_per_pp": 1.6666666666666667, "vision_value_per_pp": 5.833333333333334, "segments": {"AC": {"reported": 5, "digital_cost": 29.75, "digital_benefit": 8.67, "drag": 21.08, "ex_digital": 26.08, "ex_digital_margin": 0.04575654823332843, "reported_margin": 0.008771929824561403, "decline_22_25": -63}, "IEM": {"reported": 33, "digital_cost": 12.08, "digital_benefit": 2.0, "drag": 10.08, "ex_digital": 43.08, "ex_digital_margin": 0.10638032990974168, "reported_margin": 0.08148148148148149, "decline_22_25": -7}, "SMC": {"reported": -13, "digital_cost": 6.17, "digital_benefit": 2.33, "drag": 3.83, "ex_digital": -9.17, "ex_digital_margin": -0.042629144681128266, "reported_margin": -0.06046511627906977, "decline_22_25": -27}}, "energy_intensity": {"AC": 0.07894736842105263, "IEM": 0.06172839506172839, "SMC": 0.23255813953488372}, "labour_intensity": {"AC": 0.16666666666666666, "IEM": 0.14814814814814814, "SMC": 0.11627906976744186}, "materials_other_cogs": 630, "fcf_breakeven_ebitda": null}, "recommended": {"q": ["Q1-26", "Q2-26", "Q3-26", "Q4-26", "Q1-27", "Q2-27"], "scenario": "recommended", "params": {"realisation": 1.0, "delay_q": 0, "drift_annual": -6.0, "energy_pct": 6.5, "spend_pct": 1.75, "pricing_ac_pct": 0.5, "pricing_other_pct": 0.6, "labour_pct": 3.0, "backoffice_pct": 4.0, "dio_target": 88.0, "dso_target": 48.5, "interest_rate": 0.05387205387205387, "rate_shock_bp": 0.0, "capex_maint": 40.0, "capex_expansion": 8.0, "digital_capex_overrun": 0.0, "structural": false, "wacc": 0.11}, "ebitda_q": [9.325, 8.46225, 11.796249999999999, 14.815750000000001, 19.459125, 22.735], "revenue_q": [296.58125, 295.82675, 295.2365, 295.55125, 296.784, 298.65500000000003], "lever_benefit_q": [0.0, 1.36225, 4.2212499999999995, 7.50325, 12.121625000000002, 15.6725], "oneoff_q": [2.3, 2.85, 1.55, 0.7, 0.3, 0.2], "recurring_q": [0.0, 1.2999999999999998, 1.7499999999999998, 2.4875, 2.4875, 2.4875], "capex_q": [15.5, 17.75, 20.5, 18.25, 12.5, 12.0], "capex_digital_q": [3.5, 5.75, 8.5, 6.25, 0.5, 0.0], "dwc_q": [11.25425769040757, 7.92705786983413, 7.02060977958763, 6.489956856467387, 6.121911140759806, 5.843740909518772], "interest_q": [10.572390572390573, 10.646372160026706, 10.808083463598324, 10.97631543240655, 11.08299029538216, 11.056080587026907], "fcf_q": [-5.493132881983003, -12.007064290192577, -12.491223684010695, -7.920608575939161, 1.9980458453776464, 5.522660322491866], "debt_q": [790.493132881983, 802.5001971721756, 814.9914208561863, 822.9120294321255, 820.9139835867478, 815.3913232642559], "inventory_q": [247.24284753670372, 241.77901347734257, 236.93996127650414, 232.46666892788997, 228.2470571692129, 224.2191780821918], "receivables_q": [168.5028947728887, 166.03967096241573, 163.85811338366653, 161.8414488758133, 159.93914949373058, 158.1232876712329], "ebitda_2026": 44.39925, "ebitda_h1_27": 42.194125, "ebitda_exit_rr": 91.74, "revenue_exit_rr": 1194.6200000000001, "margin_exit": 0.07679429441998291, "fcf_2026": -37.912029432125436, "fcf_h1_27": 7.520706167869513, "fcf_18m": -30.391323264255924, "net_debt_exit": 785.3913232642559, "nd_ebitda_exit": 8.561056499501372, "interest_cover_exit": 2.074424098076103, "wc_release_18m": 44.657534246575295, "capex_18m": 96.5, "capex_digital_18m": 24.5, "oneoff_18m": 7.9, "fcf_exit_rr_ex_wc": -5.484322348107632, "fcf_breakeven_ebitda": 97.22432234810762, "levers": [{"id": "A1", "name": "Stop agentic supply-chain planning pilot; move planners to ERP-based S&OP", "theme": "Reset", "wave": 1, "kind": "reset", "gross_rr": 6.0, "recurring": 1.0, "net_rr": 5.0, "oneoff": 0.5, "capex": 0.0, "revenue_rr": 0, "segment_split": {"AC": 0.6666666666666666, "IEM": 0.3333333333333333, "SMC": 0}, "benefit_18m": 4.75}, {"id": "A2F", "name": "Predictive maintenance FIX: work-order integration, alert triage, technician copilot", "theme": "Reset", "wave": 1, "kind": "reset", "gross_rr": 2.5, "recurring": 0.0, "net_rr": 2.5, "oneoff": 1.0, "capex": 2.0, "revenue_rr": 0.0, "segment_split": {"AC": 0.6666666666666666, "IEM": 0.3333333333333333, "SMC": 0}, "benefit_18m": 2.38}, {"id": "A2S", "name": "Predictive maintenance SCALE to 150 constraint assets (AC and IEM)", "theme": "Reset", "wave": 2, "kind": "reset", "gross_rr": 3.75, "recurring": 1.25, "net_rr": 2.5, "oneoff": 0, "capex": 4.0, "revenue_rr": 0.0, "segment_split": {"AC": 0.5, "IEM": 0.5, "SMC": 0}, "benefit_18m": 1.69}, {"id": "A3F", "name": "Vision inspection FIX: recalibration on engineering change, active learning, fewer false rejects", "theme": "Reset", "wave": 1, "kind": "reset", "gross_rr": 3.5, "recurring": 0.0, "net_rr": 3.5, "oneoff": 2.0, "capex": 1.0, "revenue_rr": 0.0, "segment_split": {"AC": 0.6666666666666666, "IEM": 0, "SMC": 0.3333333333333333}, "benefit_18m": 3.33}, {"id": "A3S", "name": "Vision inspection SCALE to 4 high-scrap AC lines + digital quality passport", "theme": "Reset", "wave": 2, "kind": "reset", "gross_rr": 3.15, "recurring": 1.5, "net_rr": 1.65, "oneoff": 0, "capex": 4.5, "revenue_rr": 0.0, "segment_split": {"AC": 1.0, "IEM": 0, "SMC": 0}, "benefit_18m": 1.42}, {"id": "A4", "name": "Renegotiate PdM and vision licences/compute at Jan-2027 renewal (-15%)", "theme": "Reset", "wave": 3, "kind": "reset", "gross_rr": 1.05, "recurring": 0.0, "net_rr": 1.05, "oneoff": 0, "capex": 0, "revenue_rr": 0.0, "segment_split": {"AC": 0.6666666666666666, "IEM": 0.16666666666666666, "SMC": 0.16666666666666666}, "benefit_18m": 0.53}, {"id": "B1", "name": "Minimum-viable data foundation: common data model, master data, 3 non-ERP plants integrated", "theme": "Foundation", "wave": 1, "kind": "enabler", "gross_rr": 0.0, "recurring": 1.0, "net_rr": -1.0, "oneoff": 1.0, "capex": 3.5, "revenue_rr": 0.0, "segment_split": {"AC": 0.4789915966386555, "IEM": 0.3403361344537815, "SMC": 0.18067226890756302}, "benefit_18m": 0.0}, {"id": "B2", "name": "OT connectivity and cybersecurity baseline (IEC 62443 / NIS2)", "theme": "Foundation", "wave": 1, "kind": "enabler", "gross_rr": 0.0, "recurring": 0.5, "net_rr": -0.5, "oneoff": 0, "capex": 1.0, "revenue_rr": 0.0, "segment_split": {"AC": 0.4789915966386555, "IEM": 0.3403361344537815, "SMC": 0.18067226890756302}, "benefit_18m": 0.0}, {"id": "B3", "name": "Capability academy and change management (22 plant digital champions)", "theme": "Foundation", "wave": 1, "kind": "enabler", "gross_rr": 0.0, "recurring": 0.0, "net_rr": 0.0, "oneoff": 2.0, "capex": 0, "revenue_rr": 0.0, "segment_split": {"AC": 0.4789915966386555, "IEM": 0.3403361344537815, "SMC": 0.18067226890756302}, "benefit_18m": 0.0}, {"id": "C1", "name": "Energy intelligence: sub-metering, AI batch campaigning and set-points (SMC, AC forging, IEM)", "theme": "Cost", "wave": 1, "kind": "cost", "gross_rr": 7.8, "recurring": 0.8, "net_rr": 7.0, "oneoff": 0.4, "capex": 3.0, "revenue_rr": 0.0, "segment_split": {"AC": 0.4038461538461539, "IEM": 0.08333333333333334, "SMC": 0.5128205128205129}, "benefit_18m": 5.75}, {"id": "C2", "name": "Spend intelligence and should-cost on USD 504m addressable spend", "theme": "Cost", "wave": 1, "kind": "cost", "gross_rr": 8.82, "recurring": 1.0, "net_rr": 7.82, "oneoff": 0.3, "capex": 0.5, "revenue_rr": 0.0, "segment_split": {"AC": 0.4789915966386555, "IEM": 0.3403361344537815, "SMC": 0.18067226890756302}, "benefit_18m": 5.95}, {"id": "C3", "name": "Golden-batch process analytics for right-first-time batches (SMC)", "theme": "Cost", "wave": 2, "kind": "cost", "gross_rr": 2.0, "recurring": 0.4, "net_rr": 1.6, "oneoff": 0.3, "capex": 1.0, "revenue_rr": 0.0, "segment_split": {"AC": 0, "IEM": 0, "SMC": 1.0}, "benefit_18m": 1.2}, {"id": "C4", "name": "GenAI back-office and service automation (close, order-to-cash, P2P, service desk)", "theme": "Cost", "wave": 2, "kind": "cost", "gross_rr": 6.12, "recurring": 0.8, "net_rr": 5.32, "oneoff": 0.4, "capex": 0.5, "revenue_rr": 0.0, "segment_split": {"AC": 0.4789915966386555, "IEM": 0.3403361344537815, "SMC": 0.18067226890756302}, "benefit_18m": 3.29}, {"id": "C5", "name": "Digital performance management (OEE, shift boards) to cut overtime and contract labour", "theme": "Cost", "wave": 2, "kind": "cost", "gross_rr": 5.4, "recurring": 0.3, "net_rr": 5.1, "oneoff": 0, "capex": 1.0, "revenue_rr": 0.0, "segment_split": {"AC": 0.5277777777777778, "IEM": 0.3333333333333333, "SMC": 0.1388888888888889}, "benefit_18m": 3.71}, {"id": "D1", "name": "Pricing and cost-recovery analytics (AC index pass-through; IEM/SMC value pricing)", "theme": "Growth", "wave": 1, "kind": "growth", "gross_rr": 6.57, "recurring": 0.6, "net_rr": 5.97, "oneoff": 0, "capex": 0, "revenue_rr": 6.57, "segment_split": {"AC": 0.4337899543378995, "IEM": 0.36986301369863017, "SMC": 0.1963470319634703}, "benefit_18m": 4.43}, {"id": "D2", "name": "IEM digital CPQ and GenAI configurator (48-hour configured quotes)", "theme": "Growth", "wave": 2, "kind": "growth", "gross_rr": 2.43, "recurring": 0.6, "net_rr": 1.83, "oneoff": 0.3, "capex": 1.5, "revenue_rr": 8.1, "segment_split": {"AC": 0, "IEM": 1.0, "SMC": 0}, "benefit_18m": 1.06}, {"id": "D3", "name": "IEM 'Uptime' connected-pump service (condition monitoring subscription + predictive spares)", "theme": "Growth", "wave": 3, "kind": "growth", "gross_rr": 1.6, "recurring": 0.5, "net_rr": 1.1, "oneoff": 0.2, "capex": 1.0, "revenue_rr": 4.0, "segment_split": {"AC": 0, "IEM": 1.0, "SMC": 0}, "benefit_18m": 0.62}, {"id": "D4", "name": "AC capacity monetisation: insource IEM machined parts, qualify renewable-energy precision parts", "theme": "Growth", "wave": 2, "kind": "growth", "gross_rr": 3.0, "recurring": 0.2, "net_rr": 2.8, "oneoff": 0, "capex": 0, "revenue_rr": 8.0, "segment_split": {"AC": 1.0, "IEM": 0, "SMC": 0}, "benefit_18m": 1.27}, {"id": "E1", "name": "Inventory and receivables programme (segmentation, S&OP, DDMRP buffers, collections analytics)", "theme": "Cash", "wave": 1, "kind": "enabler", "gross_rr": 0.0, "recurring": 0.5, "net_rr": -0.5, "oneoff": 0, "capex": 0, "revenue_rr": 0.0, "segment_split": {"AC": 0.4789915966386555, "IEM": 0.3403361344537815, "SMC": 0.18067226890756302}, "benefit_18m": 0.0}], "segment_exit": {"AC": {"ebitda": 35.5109488242083, "revenue": 546.65, "margin": 0.0649610332465166}, "IEM": {"ebitda": 56.137760062929274, "revenue": 431.68000000000006, "margin": 0.1300448481813595}, "SMC": {"ebitda": 0.0912911128624252, "revenue": 216.29, "margin": 0.00042207736308856256}}, "exit_bridge": [["EBITDA 2025", 25.0], ["2025 temporary implementation costs roll off", 23.0], ["Market drift (AC volume and price-downs net of IEM growth)", -9.0], ["A. Reset the Factory of the Future", 16.200000000000003], ["B. Foundation run costs", -1.5], ["C. AI where the money is", 26.84], ["D. Grow and differentiate", 11.700000000000001], ["E. Cash programme run cost", -0.5], ["Exit run-rate EBITDA (Q2-27 x 4)", 91.74]], "digital_opex_exit": 27.9, "digital_benefit_exit": 68.64, "digital_bc_ratio_exit": 2.460215053763441, "digital_opex_exit_reported": 28.7, "digital_bc_reported_exit": 2.391637630662021}, "status_quo": {"q": ["Q1-26", "Q2-26", "Q3-26", "Q4-26", "Q1-27", "Q2-27"], "scenario": "status_quo", "params": {"realisation": 1.0, "delay_q": 0, "drift_annual": -6.0, "energy_pct": 6.5, "spend_pct": 1.75, "pricing_ac_pct": 0.5, "pricing_other_pct": 0.6, "labour_pct": 3.0, "backoffice_pct": 4.0, "dio_target": 88.0, "dso_target": 48.5, "interest_rate": 0.05387205387205387, "rate_shock_bp": 0.0, "capex_maint": 40.0, "capex_expansion": 8.0, "digital_capex_overrun": 0.0, "structural": false, "wacc": 0.11}, "ebitda_q": [10.125, 9.75, 9.375, 9.0, 10.125, 9.75], "revenue_q": [296.58125, 295.6625, 294.74375, 293.825, 292.90625, 291.9875], "lever_benefit_q": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "oneoff_q": [1.5, 1.5, 1.5, 1.5, -0.0, -0.0], "recurring_q": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "capex_q": [22.5, 22.5, 22.5, 22.5, 22.5, 22.5], "capex_digital_q": [5.0, 5.0, 5.0, 5.0, 5.0, 5.0], "dwc_q": [-2.5, -2.5, -2.5, -2.5, -2.5, -2.5], "interest_q": [10.572390572390573, 10.915116371345327, 11.267508511026746, 11.629697177841921, 12.001814311550229, 12.363791608675484], "fcf_q": [-25.447390572390574, -26.165116371345327, -26.892508511026747, -27.62969717784192, -26.876814311550227, -27.613791608675484], "debt_q": [810.4473905723905, 836.6125069437359, 863.5050154547627, 891.1347126326045, 918.0115269441548, 945.6253185528302], "inventory_q": [256.5, 258.0, 259.5, 261.0, 262.5, 264.0], "receivables_q": [173.0, 174.0, 175.0, 176.0, 177.0, 178.0], "ebitda_2026": 38.25, "ebitda_h1_27": 19.875, "ebitda_exit_rr": 39.0, "revenue_exit_rr": 1167.95, "margin_exit": 0.03339184040412689, "fcf_2026": -106.13471263260458, "fcf_h1_27": -54.49060592022571, "fcf_18m": -160.6253185528303, "net_debt_exit": 915.6253185528302, "nd_ebitda_exit": 23.47757227058539, "interest_cover_exit": 0.7885930391416961, "wc_release_18m": -15.0, "capex_18m": 135.0, "capex_digital_18m": 30.0, "oneoff_18m": 6.0, "fcf_exit_rr_ex_wc": -100.45516643470194, "fcf_breakeven_ebitda": 102.45516643470194}, "npv": {"cash_flows": [8.84113219629672, 57.654777050278575, 47.739999999999995, 47.739999999999995, 47.739999999999995], "cash_flows_ex_wc": [-23.850749999999998, 45.689125, 47.739999999999995, 47.739999999999995, 47.739999999999995], "npv": 157.4502398100143, "npv_ex_wc": 116.18868174439491, "run_rate_net": 52.739999999999995, "investment_18m": 32.4, "roi_run_rate": 1.6277777777777778, "payback_quarter_ex_wc": 7, "payback_quarter_incl_wc": 2, "cum_cash_q_ex_wc": [-5.8, -14.33775, -21.9165, -23.850749999999998, -15.016624999999998, -2.0316249999999982, 9.903375, 21.838375, 33.773375, 45.708375000000004, 57.643375000000006, 69.57837500000001], "cum_cash_q_incl_wc": [5.45425769040757, 4.843565560241701, 4.285425339829331, 8.84113219629672, 23.797168337056526, 42.6259092465753, 54.56090924657529, 66.4959092465753, 78.4309092465753, 90.3659092465753, 102.3009092465753, 114.2359092465753]}, "tornado_ebitda": [{"driver": "Delivery delay (quarters)", "low": 59.063, "high": 91.74, "base": 91.74, "swing": 32.67699999999999}, {"driver": "Benefit realisation", "low": 74.43299999999999, "high": 100.3935, "base": 91.74, "swing": 25.96050000000001}, {"driver": "Market drift (USD m/yr)", "low": 82.74, "high": 100.74, "base": 91.74, "swing": 18.0}, {"driver": "Procurement saving (% of spend)", "low": 87.96, "high": 95.52, "base": 91.74, "swing": 7.560000000000002}, {"driver": "Price recovery AC / other (%)", "low": 88.17, "high": 95.30999999999999, "base": 91.74, "swing": 7.139999999999986}, {"driver": "Energy saving (% of spend)", "low": 88.74, "high": 94.74, "base": 91.74, "swing": 6.0}, {"driver": "Inventory days target", "low": 91.74, "high": 91.74, "base": 91.74, "swing": 0.0}, {"driver": "Interest-rate shock (bp)", "low": 91.74, "high": 91.74, "base": 91.74, "swing": 0.0}, {"driver": "Digital capex overrun", "low": 91.74, "high": 91.74, "base": 91.74, "swing": 0.0}, {"driver": "Maintenance capex (USD m/yr)", "low": 91.74, "high": 91.74, "base": 91.74, "swing": 0.0}], "tornado_fcf": [{"driver": "Delivery delay (quarters)", "low": -59.41401427597819, "high": -30.391323264255924, "base": -30.391323264255924, "swing": 29.022691011722266}, {"driver": "Inventory days target", "low": -46.28158116793553, "high": -19.797817995136135, "base": -30.391323264255924, "swing": 26.483763172799392}, {"driver": "Interest-rate shock (bp)", "low": -55.7059433705352, "high": -30.391323264255924, "base": -30.391323264255924, "swing": 25.31462010627928}, {"driver": "Benefit realisation", "low": -41.540437879511195, "high": -24.816765956628288, "base": -30.391323264255924, "swing": 16.723671922882907}, {"driver": "Market drift (USD m/yr)", "low": -38.44549097506349, "high": -22.337155553448355, "base": -30.391323264255924, "swing": 16.108335421615138}, {"driver": "Maintenance capex (USD m/yr)", "low": -38.148429253660474, "high": -27.288480868494105, "base": -30.391323264255924, "swing": 10.85994838516637}, {"driver": "Digital capex overrun", "low": -40.62432396749137, "high": -30.391323264255924, "base": -30.391323264255924, "swing": 10.233000703235447}, {"driver": "Procurement saving (% of spend)", "low": -32.982622250977364, "high": -27.800024277534476, "base": -30.391323264255924, "swing": 5.182597973442888}, {"driver": "Price recovery AC / other (%)", "low": -32.838661196159514, "high": -27.94398533235234, "base": -30.391323264255924, "swing": 4.894675863807173}, {"driver": "Energy saving (% of spend)", "low": -32.6415456492943, "high": -28.141100879217536, "base": -30.391323264255924, "swing": 4.500444770076765}], "scenarios": {"Bear": {"ebitda_2026": 31.541774999999998, "ebitda_exit_rr": 53.316225, "margin_exit": 0.04505110434564384, "fcf_18m": -112.7291520531188, "net_debt_exit": 867.7291520531189, "nd_ebitda_exit": 16.27514236150663, "interest_cover_exit": 0.8728209606846149, "wc_release_18m": 21.219178082191775, "npv": 34.90946617639922}, "Base": {"ebitda_2026": 44.39925, "ebitda_exit_rr": 91.74, "margin_exit": 0.07679429441998291, "fcf_18m": -30.391323264255924, "net_debt_exit": 785.3913232642559, "nd_ebitda_exit": 8.561056499501372, "interest_cover_exit": 2.074424098076103, "wc_release_18m": 44.657534246575295, "npv": 157.4502398100143}, "Bull": {"ebitda_2026": 47.9747625, "ebitda_exit_rr": 119.8935, "margin_exit": 0.10036120272555289, "fcf_18m": -9.094553149384645, "net_debt_exit": 764.0945531493849, "nd_ebitda_exit": 6.373110745364718, "interest_cover_exit": 2.754932990033847, "wc_release_18m": 52.30136986301369, "npv": 191.15346225830652}, "Status quo": {"ebitda_2026": 38.25, "ebitda_exit_rr": 39.0, "margin_exit": 0.03339184040412689, "fcf_18m": -160.6253185528303, "net_debt_exit": 915.6253185528302, "nd_ebitda_exit": 23.47757227058539, "interest_cover_exit": 0.7885930391416961, "wc_release_18m": -15.0, "npv": null}}, "breakeven": {"realisation_for_npv_zero": 0.34580068877139847, "realisation_for_fcf_equal_status_quo": -2.0, "realisation_for_exit_ebitda_2x_status_quo": 0.7618304732189287, "fcf_breakeven_ebitda": 97.22432234810762, "fcf_18m_at_zero_benefit": -67.55503864844017, "fcf_18m_status_quo": -160.6253185528303}, "monte_carlo": {"n": 5000, "ebitda_exit": {"p10": 66.53687387913614, "p50": 82.45033168928222, "p90": 95.77831909358055, "mean": 81.51388631166043}, "fcf_18m": {"p10": -76.17215210699152, "p50": -57.13860377278924, "p90": -40.802921516645895}, "nd_ebitda": {"p10": 8.356489206217125, "p50": 9.850687802375258, "p90": 12.46014382594498}, "prob_ebitda_ge_75": 0.73, "prob_ebitda_ge_60": 0.952, "prob_ebitda_ge_2x_sq": 0.6398, "prob_fcf_better_than_sq_by_100": 0.5912, "hist_ebitda": [2, 8, 15, 27, 51, 73, 97, 103, 169, 233, 327, 399, 439, 499, 524, 499, 462, 378, 314, 205, 102, 51, 18, 5], "hist_edges": [40.099199918295454, 43.093047207226974, 46.08689449615849, 49.080741785090005, 52.074589074021524, 55.068436362953044, 58.062283651884556, 61.056130940816075, 64.0499782297476, 67.04382551867911, 70.03767280761063, 73.03152009654215, 76.02536738547366, 79.01921467440519, 82.0130619633367, 85.00690925226822, 88.00075654119973, 90.99460383013125, 93.98845111906277, 96.98229840799428, 99.97614569692581, 102.96999298585732, 105.96384027478884, 108.95768756372036, 111.95153485265187]}, "portfolio": {"objective": 119.72393260152279, "selected": ["A2F", "A2S", "A3F", "C1", "C2", "C3", "C4", "C5", "D1", "D2", "D3", "D4", "A1", "B1", "B2", "B3"], "capex": 20.0, "oneoff": 8.399999999999999, "npv_sum": 154.034102048166, "candidates": [{"id": "A2F", "name": "Predictive maintenance FIX: work-order integration, alert triage, technician copilot", "npv": 6.293975086436148, "sd": 3.199507175792775, "capex": 2.0, "oneoff": 1.0, "mandatory": false, "pre": [], "excl": null, "recommended": true, "rr": 2.5, "recurring": 0.0}, {"id": "A2S", "name": "Predictive maintenance SCALE to 150 constraint assets (AC and IEM)", "npv": 3.8024353475858375, "sd": 4.36324130939036, "capex": 4.0, "oneoff": 0, "mandatory": false, "pre": ["A2F"], "excl": "PdMscale", "recommended": true, "rr": 3.75, "recurring": 1.25}, {"id": "A3F", "name": "Vision inspection FIX: recalibration on engineering change, active learning, fewer false rejects", "npv": 9.950554715913604, "sd": 4.479310046109886, "capex": 1.0, "oneoff": 2.0, "mandatory": false, "pre": [], "excl": null, "recommended": true, "rr": 3.5, "recurring": 0.0}, {"id": "A3S", "name": "Vision inspection SCALE to 4 high-scrap AC lines + digital quality passport", "npv": 0.35976446902724146, "sd": 3.6651226998879007, "capex": 4.5, "oneoff": 0, "mandatory": false, "pre": ["A3F"], "excl": "VISscale", "recommended": true, "rr": 3.15, "recurring": 1.5, "gated": true}, {"id": "C1", "name": "Energy intelligence: sub-metering, AI batch campaigning and set-points (SMC, AC forging, IEM)", "npv": 22.179088621633205, "sd": 9.982462388473458, "capex": 3.0, "oneoff": 0.4, "mandatory": false, "pre": [], "excl": null, "recommended": true, "rr": 7.8, "recurring": 0.8}, {"id": "C2", "name": "Spend intelligence and should-cost on USD 504m addressable spend", "npv": 27.597836806973596, "sd": 11.287861316196912, "capex": 0.5, "oneoff": 0.3, "mandatory": false, "pre": [], "excl": null, "recommended": true, "rr": 8.82, "recurring": 1.0}, {"id": "C3", "name": "Golden-batch process analytics for right-first-time batches (SMC)", "npv": 3.8572956160836847, "sd": 2.327062031674858, "capex": 1.0, "oneoff": 0.3, "mandatory": false, "pre": [], "excl": null, "recommended": true, "rr": 2.0, "recurring": 0.4}, {"id": "C4", "name": "GenAI back-office and service automation (close, order-to-cash, P2P, service desk)", "npv": 16.375833406590477, "sd": 7.120809816925066, "capex": 0.5, "oneoff": 0.4, "mandatory": false, "pre": ["B1"], "excl": null, "recommended": true, "rr": 6.12, "recurring": 0.8}, {"id": "C5", "name": "Digital performance management (OEE, shift boards) to cut overtime and contract labour", "npv": 15.83430265292888, "sd": 6.283067485522118, "capex": 1.0, "oneoff": 0, "mandatory": false, "pre": [], "excl": null, "recommended": true, "rr": 5.4, "recurring": 0.3}, {"id": "D1", "name": "Pricing and cost-recovery analytics (AC index pass-through; IEM/SMC value pricing)", "npv": 21.68740668861755, "sd": 8.408304857983415, "capex": 0, "oneoff": 0, "mandatory": false, "pre": ["C2"], "excl": null, "recommended": true, "rr": 6.57, "recurring": 0.6}, {"id": "D2", "name": "IEM digital CPQ and GenAI configurator (48-hour configured quotes)", "npv": 4.033423754838875, "sd": 2.8273803684849526, "capex": 1.5, "oneoff": 0.3, "mandatory": false, "pre": ["B1"], "excl": null, "recommended": true, "rr": 2.43, "recurring": 0.6}, {"id": "D3", "name": "IEM 'Uptime' connected-pump service (condition monitoring subscription + predictive spares)", "npv": 1.7774789324705436, "sd": 1.7021910820534665, "capex": 1.0, "oneoff": 0.2, "mandatory": false, "pre": ["A2F"], "excl": null, "recommended": true, "rr": 1.6, "recurring": 0.5}, {"id": "D4", "name": "AC capacity monetisation: insource IEM machined parts, qualify renewable-energy precision parts", "npv": 9.194349167209133, "sd": 3.4905930475122866, "capex": 0, "oneoff": 0, "mandatory": false, "pre": [], "excl": null, "recommended": true, "rr": 3.0, "recurring": 0.2}, {"id": "A1", "name": "Stop agentic planning pilot", "npv": 17.571029650572914, "sd": 1.0969738888432374, "capex": 0, "oneoff": 0.5, "mandatory": false, "pre": [], "excl": "SCP", "recommended": true, "rr": 6.0, "recurring": 1.0}, {"id": "B1", "name": "Minimum-viable data foundation", "npv": -3.036144913492828, "sd": 1.5386805587426997, "capex": 3.5, "oneoff": 1.0, "mandatory": true, "pre": [], "excl": null, "recommended": true, "rr": 1.5, "recurring": 1.0}, {"id": "B2", "name": "OT connectivity and cyber baseline", "npv": -1.1864474946906238, "sd": 0.5128935195808999, "capex": 1.0, "oneoff": 0.0, "mandatory": true, "pre": [], "excl": null, "recommended": true, "rr": 0.5, "recurring": 0.5}, {"id": "B3", "name": "Capability academy and change", "npv": -1.898315991504998, "sd": 0.0, "capex": 0.0, "oneoff": 2.0, "mandatory": true, "pre": [], "excl": null, "recommended": true, "rr": 0.0, "recurring": 0.0}, {"id": "X1", "name": "Continue and expand agentic planning (approve USD 10m)", "npv": -30.007320740760985, "sd": 3.5336533591957, "capex": 10.0, "oneoff": 3.0, "mandatory": false, "pre": [], "excl": "SCP", "recommended": false, "rr": 2.0, "recurring": 8.0}, {"id": "X2", "name": "Predictive maintenance on all assets (approve USD 8m)", "npv": -9.30174835837449, "sd": 3.9892491971569006, "capex": 8.0, "oneoff": 0.0, "mandatory": false, "pre": ["A2F"], "excl": "PdMscale", "recommended": false, "rr": 3.0, "recurring": 3.0}, {"id": "X3", "name": "Vision on all lines (approve USD 12m)", "npv": -10.486570910983879, "sd": 4.2551991436340275, "capex": 12.0, "oneoff": 0.0, "mandatory": false, "pre": ["A3F"], "excl": "VISscale", "recommended": false, "rr": 3.2, "recurring": 2.5}, {"id": "X4", "name": "Full ERP migration of three plants", "npv": -14.355495335811483, "sd": 1.887871864445793, "capex": 12.0, "oneoff": 4.0, "mandatory": false, "pre": [], "excl": null, "recommended": false, "rr": 1.5, "recurring": 1.0}, {"id": "X5", "name": "Network-wide digital twin", "npv": -5.106005747982377, "sd": 2.355768906130467, "capex": 5.0, "oneoff": 1.0, "mandatory": false, "pre": [], "excl": null, "recommended": false, "rr": 1.0, "recurring": 0.8}, {"id": "X6", "name": "Agentic planning relaunch in 2027", "npv": -15.617253021899153, "sd": 5.286041220448219, "capex": 10.0, "oneoff": 2.0, "mandatory": false, "pre": ["B1"], "excl": null, "recommended": false, "rr": 3.0, "recurring": 4.0}], "matches_recommendation": true, "gated_tranche": ["A3S"], "gated_capex": 4.5}, "scoring": [{"initiative": "A1 Stop agentic planning pilot", "impact": 2.4, "ease": 3.0, "impact_detail": [3, 2, 2, 3, 2], "ease_detail": [3, 3, 3, 3, 3, 3]}, {"initiative": "A2 PdM fix and scale", "impact": 2.8, "ease": 2.5, "impact_detail": [3, 3, 2, 3, 3], "ease_detail": [2, 2, 3, 3, 3, 2]}, {"initiative": "A3 Vision fix and scale", "impact": 2.8, "ease": 2.5, "impact_detail": [3, 3, 3, 2, 3], "ease_detail": [2, 2, 3, 3, 3, 2]}, {"initiative": "B1 Data foundation", "impact": 2.6, "ease": 2.0, "impact_detail": [3, 2, 2, 3, 3], "ease_detail": [2, 1, 2, 3, 2, 2]}, {"initiative": "C1 Energy intelligence", "impact": 2.8, "ease": 3.0, "impact_detail": [3, 3, 3, 2, 3], "ease_detail": [3, 3, 3, 3, 3, 3]}, {"initiative": "C2 Spend intelligence", "impact": 2.8, "ease": 2.8333333333333335, "impact_detail": [3, 3, 3, 2, 3], "ease_detail": [3, 2, 3, 3, 3, 3]}, {"initiative": "C3 Golden batch", "impact": 2.0, "ease": 2.3333333333333335, "impact_detail": [2, 2, 2, 2, 2], "ease_detail": [2, 2, 2, 3, 2, 3]}, {"initiative": "C4 GenAI back office", "impact": 2.6, "ease": 2.5, "impact_detail": [2, 3, 3, 2, 3], "ease_detail": [2, 2, 2, 3, 3, 3]}, {"initiative": "C5 Digital performance mgmt", "impact": 2.4, "ease": 3.0, "impact_detail": [2, 2, 2, 3, 3], "ease_detail": [3, 3, 3, 3, 3, 3]}, {"initiative": "D1 Pricing analytics", "impact": 2.8, "ease": 2.6666666666666665, "impact_detail": [3, 3, 3, 2, 3], "ease_detail": [2, 2, 3, 3, 3, 3]}, {"initiative": "D2 CPQ configurator", "impact": 2.2, "ease": 2.1666666666666665, "impact_detail": [3, 2, 2, 2, 2], "ease_detail": [2, 2, 2, 3, 2, 2]}, {"initiative": "D3 Uptime service", "impact": 2.6, "ease": 1.8333333333333333, "impact_detail": [3, 2, 2, 3, 3], "ease_detail": [2, 1, 2, 3, 1, 2]}, {"initiative": "D4 AC capacity monetisation", "impact": 2.2, "ease": 2.3333333333333335, "impact_detail": [3, 2, 2, 2, 2], "ease_detail": [2, 2, 2, 3, 2, 3]}, {"initiative": "D5 Quality passport", "impact": 1.8, "ease": 2.1666666666666665, "impact_detail": [2, 1, 1, 2, 3], "ease_detail": [2, 2, 2, 2, 2, 3]}, {"initiative": "X1 Expand agentic planning", "impact": 1.4, "ease": 1.3333333333333333, "impact_detail": [1, 1, 1, 2, 2], "ease_detail": [1, 1, 1, 2, 2, 1]}, {"initiative": "X4 Full ERP migration (3 plants)", "impact": 1.8, "ease": 1.5, "impact_detail": [2, 1, 1, 2, 3], "ease_detail": [1, 1, 2, 3, 1, 1]}, {"initiative": "X5 Network digital twin", "impact": 1.6, "ease": 1.1666666666666667, "impact_detail": [2, 1, 1, 2, 2], "ease_detail": [1, 1, 1, 2, 1, 1]}], "defaults": {"realisation": 1.0, "delay_q": 0, "drift_annual": -6.0, "energy_pct": 6.5, "spend_pct": 1.75, "pricing_ac_pct": 0.5, "pricing_other_pct": 0.6, "labour_pct": 3.0, "backoffice_pct": 4.0, "dio_target": 88.0, "dso_target": 48.5, "interest_rate": 0.05387205387205387, "rate_shock_bp": 0.0, "capex_maint": 40.0, "capex_expansion": 8.0, "digital_capex_overrun": 0.0, "structural": false, "wacc": 0.11}, "content": {"ANSOFF": {"Market penetration (existing products, existing markets)": ["AC index pass-through and quote discipline", "SMC batch certificates and remote technical support", "IEM CPQ: 48-hour configured quotes"], "Product development (new offers, existing customers)": ["IEM Uptime connected-pump subscription + predictive spares", "AC digital quality passport with embedded-carbon data"], "Market development (existing capability, new customers)": ["AC precision machining for renewable-energy and industrial customers", "Insource IEM shafts and housings into idle AC capacity", "India plants as EU feeder under the FTA"], "Diversification": ["Not pursued within the mandate: no cash for unrelated bets"]}, "BCG": [{"seg": "Industrial Equipment & Machinery", "growth": 0.04985420716280253, "margin": 0.08148148148148149, "rev": 405, "quadrant": "Star", "posture": "Invest to grow: CPQ, Uptime service, PdM on constraint assets"}, {"seg": "Auto Components", "growth": -0.02235389681036748, "margin": 0.008771929824561403, "rev": 570, "quadrant": "Fading cash cow", "posture": "Fix and refocus: cost, quality, price recovery, capacity monetisation"}, {"seg": "Specialty Materials & Coatings", "growth": 0.042065344470325394, "margin": -0.06046511627906977, "rev": 215, "quadrant": "Question mark sliding to dog", "posture": "Fix to breakeven, then fix-or-exit gate at month 12"}], "BENCHMARK": [["Bharat Forge (standalone, FY26)", "Auto Components", "EBITDA margin", 27.5, "BF"], ["Sona Comstar (FY26)", "Auto Components", "EBITDA margin", 24.7, "SONA"], ["Sundram Fasteners (standalone, FY26)", "Auto Components", "EBITDA margin", 17.2, "SUNDRAM"], ["Ironbridge Auto Components (2025)", "Auto Components", "EBITDA margin", 0.9, "Case"], ["Kirloskar Brothers (FY26)", "Industrial Equipment", "EBITDA margin", 13.7, "KBL"], ["KSB service segment (2025)", "Industrial Equipment", "EBIT margin", 18.2, "KSB"], ["KSB group (2025)", "Industrial Equipment", "EBIT margin", 8.3, "KSB"], ["Ironbridge IEM (2025)", "Industrial Equipment", "EBITDA margin", 8.1, "Case"], ["AkzoNobel (2025)", "Materials & Coatings", "Adj. EBITDA margin", 14.2, "AKZO"], ["Ironbridge SMC (2025)", "Materials & Coatings", "EBITDA margin", -6.0, "Case"]], "COST_PROFIT": [["Revenue 1,190", "AC 570 (-7.3% YoY) | IEM 405 (+1.2%) | SMC 215 (flat)"], ["Cost of sales 930 (78.2%)", "Materials and other 630 | Direct labour 180 | Energy 120 (SMC 23% of its revenue)"], ["Operating expenses 235 (19.7%)", "Personnel 108 (+20% since 2022) | Selling 45 (+29%) | Digital 48 (6x since 2022) | Other 34"], ["EBITDA 25 (2.1%)", "Underlying ex-digital 60 (5.0%); digital net drag 35"], ["Below EBITDA", "D&A 90 | Finance costs 40 | Net loss 105"]], "DISRUPTIVE_RESPONSE_AC": [["Refocus on defensible customers", "EV-agnostic housings and brackets, commercial and off-highway programmes", "Chosen"], ["Diversify the portfolio", "Renewable-energy and industrial precision parts; insourced IEM parts", "Chosen"], ["Plan for a fast exit", "Only as a controlled sale at recovered value if Gate 3 fails, never a forced sale at the trough", "Held in reserve"], ["Acquire / launch / split the disrupter", "No cash for acquisitions within the mandate", "Rejected"]], "ENABLERS": [["Data", 1.5, 3.5, "Common data model; master data for materials, BOM, routings, assets, suppliers; 3 non-ERP plants integrated"], ["Technology", 2.0, 3.0, "One IIoT stack for PdM, energy and Uptime; integration layer; IEC 62443"], ["Process", 1.5, 3.0, "Alert-to-work-order loop; spec change triggers model recalibration; S&OP cadence"], ["Governance", 1.0, 3.5, "Value Board, stage gates, finance-validated benefits, stop rules"], ["People", 2.0, 3.0, "22 champions; technician, planner and buyer upskilling"], ["Leadership", 1.5, 3.5, "CEO sponsorship; plant managers own adoption KPIs"]], "ERRC": {"Eliminate": ["Agentic LLM planning on unclean master data", "Expansion capex where utilisation is 67-72%", "Pilots without control groups", "Monthly manual consolidation at 3 plants"], "Reduce": ["Manual review of flagged rejects 45% to 20%", "Inventory 100 to 88 days", "Energy intensity 10.1% to 9.4% of revenue", "Licence spend at the Jan-2027 renewal (-15%)"], "Raise": ["Alert closure 60% to 85% via work-order integration", "Machine-data coverage 40% to 60%", "On-time delivery 86% to 92%", "Business ownership of every use case"], "Create": ["Uptime-as-a-service for IEM customers", "Serial-level quality passport for OEM RFQs", "Internal capacity marketplace (AC machines IEM parts)", "Value-gated funding with test-vs-control evidence"]}, "GATES": [["Gate 0 - Month 1", "Portfolio and 32.4 envelope approved; SCP stop notice; expansion capex frozen outside IEM"], ["Gate 1 - Month 6", "PdM alert closure >=75%; vision manual review <=30%; EBITDA run-rate >=45; working capital released >=19 -> release 8.5 scale tranche"], ["Gate 2 - Month 12", "EBITDA run-rate >=62; DIO <=92; SMC on path to >=3% margin or strategic review starts"], ["Gate 3 - Month 18", "EBITDA run-rate >=90; AC margin >=6%; net debt/EBITDA <=9x -> recommend the board retains Auto Components"]], "GROUP_VS_BU": {"Group-wide (standardise once)": ["Common data model and master data", "Integration of the 3 non-ERP plants", "One IIoT platform for PdM, energy and Uptime", "OT connectivity and cybersecurity", "Spend intelligence and should-cost", "GenAI back office", "Value Office, stage gates, capability academy"], "Auto Components (efficient, zero-defect)": ["Vision fix and scale + quality passport", "Index pass-through pricing", "Capacity monetisation into renewables and IEM parts", "Energy on forging lines"], "Industrial Equipment & Machinery (responsive, service-led)": ["CPQ and GenAI configurator", "Uptime connected service", "PdM on constraint assets", "Debottleneck capex only here"], "Specialty Materials & Coatings (efficient batch)": ["Energy intelligence and batch campaigning", "Golden-batch analytics", "Digital batch certificates", "Fix-or-exit gate at month 12"]}, "HAVES": [["Closed-loop maintenance", "Lighthouses: OEE +10-13 pts; PdM cuts downtime 30-50%", "Alerts not linked to work orders; 60% closed on time"], ["AI quality inspection", "Defects -31% to -90% at lighthouses", "Covers 8 lines; 45% of flags re-checked by hand"], ["Integrated planning", "AI-enabled supply chains: inventory -35%, service +65%", "Inventory days up 90 to 94 in the pilot"], ["Connected service business", "KSB: service 33% of sales at 18% EBIT; KSB Guard monitoring", "No service model on the IEM installed base"], ["Energy management", "~11% savings in first years (IEA, 300+ cases)", "No sub-metering; energy 23% of SMC revenue"], ["One data backbone", "Single ERP and data model", "8 of 11 plants on ERP; 40% machine data; definitions vary"], ["Scaling discipline", "AI leaders run half as many use cases, put 70% into people and process", "Three pilots in parallel; 8% of project opex on training and change"]], "HERBERT_BARRIERS": {"People": {"Open": 3, "Adaptable": 3, "Accountable": 1}, "Process": {"Best practice": 2, "Measurability": 2, "Value": 1}, "Platform (FACE)": {"Fast": 2, "Accessible": 3, "Clever": 2, "Extendible": 1}, "Partnerships": {"Timely short-term": 2, "Capability building": 2, "Long-term value adding": 1}}, "HERBERT_BUILD": [["Bridge", "Months 0-2", "External and internal gaps: peer benchmarks, lighthouse evidence, customer interviews; one shared vision 'digital must pay for itself'; CEO-led Value Board replaces the CDTO."], ["Uncover", "Months 1-3", "Barriers scored across people, process, platforms (FACE) and partnerships; assets found (PdM and vision stacks, ERP at 8 plants); routes to transformation set as outcomes."], ["Iterate", "Months 2-12", "Cross-functional squads in 90-day cycles with MVPs and control groups; small funding, fast learning."], ["Leverage", "Months 6-15", "Use energy, procurement and PdM wins to earn plant buy-in and fund Wave 2; external: pilot customers for Uptime."], ["Disseminate", "Months 12-18", "Scale proven use cases across 11 plants; adoption KPIs in plant scorecards and variable pay; champion network formalised."]], "INVENTORY": {"dio": [87.0, 88.2, 92.7, 100.1], "dso": [47.6, 47.9, 49.9, 52.8], "dpo": [70.0, 71.4, 72.6, 76.5], "ccc": [64.6, 64.7, 69.9, 76.3], "notes": ["Inventory +50 (+24%) since 2022 while revenue +3.5%", "33 of inventory is excess versus 2022 days on hand", "Planning pilot worsened inventory days 90 to 94 against a 75 target", "Target 88 days by June 2027 releases 31; DSO 52.8 to 48.5 releases 14"]}, "KPIS": [["Financial turnaround", "Group EBITDA run-rate (USD m)", "25", "45", "62", "92", "CFO", "Lagging"], ["Financial turnaround", "EBITDA margin", "2.1%", "3.8%", "5.2%", "7.7%", "CFO", "Lagging"], ["Financial turnaround", "Quarterly free cash flow (USD m)", "-35 avg", "-12", "-8", "+5.5", "CFO", "Lagging"], ["Financial turnaround", "Net debt / EBITDA run-rate", "30.2x", "17.1x", "12.8x", "8.6x", "CFO", "Lagging"], ["Financial turnaround", "Interest cover (EBITDA / interest)", "0.6x", "1.1x", "1.4x", "2.1x", "CFO", "Lagging"], ["Digital value", "Digital benefit per dollar of digital opex", "0.27x", "0.4x", "1.2x", "2.4x", "Value Office", "Lagging"], ["Digital value", "Digital and AI opex (USD m, annualised)", "48", "40", "34", "29", "Value Office", "Leading"], ["Digital value", "Share of claimed benefits validated by finance", "n/a", "80%", "85%", "90%", "Finance controller", "Leading"], ["Operations", "Unplanned downtime, PdM cohort", "9.0%", "8.5%", "7.5%", "7.5%", "COO", "Lagging"], ["Operations", "Alerts closed within window", "60%", "75%", "85%", "90%", "Plant managers", "Leading"], ["Operations", "Scrap/rework, covered lines", "4.8%", "4.5%", "4.0%", "4.0%", "COO", "Lagging"], ["Operations", "Flagged rejects needing manual review", "45%", "30%", "20%", "15%", "Quality heads", "Leading"], ["Operations", "Energy cost / revenue", "10.1%", "10.0%", "9.8%", "9.4%", "COO", "Lagging"], ["Supply chain and cash", "Inventory days (DIO)", "100", "95", "91", "88", "Supply chain head", "Lagging"], ["Supply chain and cash", "Receivable days (DSO)", "52.8", "50.9", "49.6", "48.5", "CFO", "Lagging"], ["Supply chain and cash", "On-time delivery", "86%", "87%", "90%", "92%", "Supply chain head", "Lagging"], ["Commercial and growth", "Auto Components EBITDA margin", "0.9%", "3.0%", "4.2%", "6.5%", "AC head", "Lagging"], ["Commercial and growth", "IEM quote turnaround", "multi-day", "5 days", "3 days", "48 hours", "IEM head", "Leading"], ["Commercial and growth", "Uptime connected pumps / revenue run-rate", "0", "pilot design", "MVP live", "USD 4m", "IEM head", "Leading"], ["Foundation and people", "Machine-data coverage", "40%", "45%", "55%", "60%", "Value Office", "Leading"], ["Foundation and people", "Plants on common data model", "8 of 11", "9 of 11", "11 of 11", "11 of 11", "Value Office", "Leading"], ["Foundation and people", "Master-data accuracy, critical attributes", "unmeasured", "85%", "92%", "95%", "Value Office", "Leading"], ["Foundation and people", "Digital champions certified", "0", "11", "22", "22", "CHRO", "Leading"]], "ORG": {"Value Board": "Monthly; chaired by the CEO with CFO, COO, three segment heads, CHRO and Head of Value Office. Decides gates and stops.", "Digital Value Office": "Replaces the CDTO role; led by an operations executive reporting to the CEO; a finance controller validates every benefit against test-vs-control evidence.", "Central team (24, redeployed, no net hires)": "Data and platform squad 8 | AC squad 5 | IEM squad 4 | SMC squad 3 | Value and adoption squad 4.", "Plants": "11 plant managers own adoption KPIs (20% of variable pay); 22 digital champions (2 per plant, part-time).", "Partners": "Capability-building partners on outcome-based terms (energy gain-share, procurement success fee); vendor licences renegotiated at the Jan-2027 renewal.", "Decision rights": "Business owns the value, the Value Office owns method and platform, finance owns the number."}, "PESTEL": [["Political", "US Section 232 duties on imported auto parts since 3 May 2025; EU-India FTA concluded Jan 2026 (90% of tariffs cut or removed), awaiting ratification.", "Route North America volumes carefully; position India plants as the low-cost feeder for Europe once the FTA applies.", "S232, FTA"], ["Economic", "EU industrial power roughly 2x US and >50% above India/China (2025); European auto suppliers earn 3.6% EBIT; Ironbridge debt costs ~5.4% with a downgrade warning.", "Energy and OEM price-downs are structural, so cost-out must be permanent and cash-light.", "IEA_PRICE, RB_SUP"], ["Social", "Over 70% of employers struggle to fill roles; the case names technician availability as the PdM constraint.", "Augment technicians (work-order integration, copilots) rather than hire; build 22 plant digital champions.", "BCG_SUP"], ["Technological", "Lighthouse plants report OEE +10-13 pts, defects -31-90%, inventory days -30%; yet only ~30% of manufacturers capture Industry 4.0 value at scale and 74% of firms see no tangible AI value.", "The technology works; the gap is adoption and data. Scale only what is proven with control groups.", "WEF_GLN, MCK_SCALE, BCG74"], ["Environmental", "CBAM definitive phase since 1 Jan 2026; Commission proposes adding 180 steel/aluminium-intensive downstream goods incl. vehicle components and machinery from 2028.", "EU customers will ask for embedded-carbon data per part: build it into the AC quality passport and energy sub-metering.", "CBAM"], ["Legal", "EU Data Act applies to connected products from 12 Sep 2025 (design duties 12 Sep 2026); EU Machinery Regulation from 20 Jan 2027 (cybersecurity as a safety requirement); AI Act high-risk duties deferred to Dec 2027 / Aug 2028; NIS2 covers machinery, vehicle and chemical makers.", "Design the IEM Uptime service Data-Act-compliant from day one; IEC 62443 baseline for EU plants; keep AI out of safety functions.", "DATAACT, MACHREG, AIACT"]], "PORTER": {"AC": {"Rivalry": 5, "Buyer power": 5, "Supplier power": 3, "Substitutes": 4, "New entrants": 3, "note": "OEMs set price-downs; EV shift erodes ICE shafts; Indian forgers earn 17-27% EBITDA. Red ocean: compete on cost, quality and traceability."}, "IEM": {"Rivalry": 3, "Buyer power": 3, "Supplier power": 2, "Substitutes": 2, "New entrants": 2, "note": "Reliability, configuration and service decide; installed base plus data creates lock-in and aftermarket margins."}, "SMC": {"Rivalry": 4, "Buyer power": 3, "Supplier power": 4, "Substitutes": 2, "New entrants": 2, "note": "Global majors at ~14% EBITDA; feedstock and energy suppliers squeeze a 67%-utilised, energy-heavy network."}}, "RISKS": [["Benefits fail to replicate beyond pilots", "M", "H", "Test-vs-control cohorts; 60% efficacy already assumed for scale; tranches gated", "Validated benefit share <80%", "Value Office"], ["Plant adoption stalls", "M", "H", "Work-order integration, adoption KPIs in pay, 22 champions, visible early wins", "Alert closure <75% at M6", "COO"], ["Refinancing of 180 short-term debt / downgrade", "M", "H", "Monthly lender reporting on the value plan; front-loaded cash release; capex reset; covenant reset talks", "Quarterly FCF below plan by >10", "CFO"], ["Delivery slips by one or two quarters", "M", "H", "Pre-approved envelope, Wave 1 starts in month 1, squads not committees; a 2-quarter slip costs ~33 of exit EBITDA", "Milestone slippage >4 weeks", "Value Office"], ["Deeper OEM volume decline / EV shift", "M", "M", "Capacity monetisation, refocus on EV-agnostic parts, price recovery", "AC order intake -8% YoY", "AC head"], ["Master data takes longer", "M", "M", "Critical attributes first; integration layer instead of ERP migration", "Accuracy <85% at M6", "Value Office"], ["Cyber incident as connectivity rises", "L", "H", "IEC 62443 zoning, NIS2 baseline, segmented OT networks", "Unpatched OT assets", "CIO"], ["Regulatory non-compliance (Data Act, Machinery Reg., AI Act)", "L", "M", "Compliance by design for Uptime; AI kept out of safety functions", "Legal review findings", "General Counsel"], ["Vendor lock-in and commitments", "L", "M", "Renew only at Jan-2027 on outcome terms; exit SCP at committed minimum", "Renewal quotes above plan", "Procurement"]], "ROADMAP": [["Value Board, Value Office, gates", 1, 18, 1, "M1 launch; gates M6, M12, M18"], ["A1 Stop agentic planning pilot", 1, 2, 1, "M1 notice; M2 planners on ERP-based S&OP"], ["A2 PdM fix (work orders, triage)", 1, 6, 1, "M6 alert closure >=75%"], ["A3 Vision fix (recalibration, labelling)", 1, 6, 1, "M6 manual review <=30%"], ["B1 Data foundation MVP + 3 plants integrated", 1, 9, 1, "M9 11/11 plants on common data model"], ["B2 OT connectivity and cyber baseline", 1, 6, 1, "M6 EU plants NIS2-ready"], ["E1 Inventory, receivables, capex reset", 1, 18, 1, "M1 expansion freeze; M18 DIO 88, DSO 48.5"], ["C1 Energy intelligence (SMC first)", 2, 15, 1, "M6 SMC sub-metered; M15 all segments"], ["C2 Spend intelligence and should-cost", 2, 15, 1, "M12 annual contract round"], ["D1 Pricing and cost recovery", 2, 13, 1, "M13 Jan-2027 OEM round"], ["C5 Digital performance management", 4, 12, 2, "M12 all plants"], ["C4 GenAI back office", 5, 18, 2, "M12 close automated at 3 plants"], ["A2/A3 Scale (gated at M6)", 7, 15, 2, "Tranche released only if Gate 1 passes"], ["C3 Golden batch (SMC)", 7, 15, 2, "M15 right-first-time +"], ["D2 IEM CPQ and GenAI configurator", 7, 15, 2, "M15 48-hour quotes"], ["D4 AC capacity monetisation", 7, 18, 2, "M12 first insourced parts; M18 renewables qualified"], ["A4 Licence renegotiation", 10, 13, 2, "Jan-2027 renewal -15%"], ["D3 IEM Uptime service", 9, 18, 3, "M9 MVP with 3-5 customers; M13 launch"], ["Structural gates: SMC fix-or-exit, AC footprint review", 12, 18, 3, "M12 SMC decision; M18 footprint decision"]], "ROGERS_DOMAINS": [["Customers", "Harness customer networks", "Co-develop Uptime with 3-5 IEM key accounts; OEM supplier portals carry the quality passport."], ["Competition", "Build platforms, not just products", "Competitive value train: OEMs hold AC leverage; in IEM the Data Act lets third parties service our pumps unless Ironbridge offers the better service first."], ["Data", "Turn data into assets", "Data Value Generator: insights (PdM, golden batch, spend cube), targeting (constraint assets, collections), personalisation (CPQ), context (customer uptime dashboards)."], ["Innovation", "Innovate by rapid experimentation", "Convergent experiments: every scale decision uses matched test-vs-control cohorts, answering the case warning that local results do not prove causality."], ["Value", "Adapt your value proposition", "Value Proposition Roadmap per customer type; AC takes route 'new customers, same value' into renewables and industrial parts."]], "SCOR": [["Plan", "Agentic planning accepted 35% of schedules; inventory days rose 90 to 94; master data inconsistent", "sP1-sP4: S&OP cadence, ABC-XYZ segmentation, DDMRP buffers in ERP", "Forecast accuracy, DIO"], ["Source", "No spend cube across 11 plants; 3 plants off ERP", "sS1-sS3: spend intelligence, should-cost, index clauses", "Price variance, savings % of spend"], ["Make", "PdM 9% downtime (target 7%); vision 4.8% scrap (target 3.5%); energy 10.1% of revenue", "sM1 MTS (AC, SMC standard), sM2 MTO (AC releases, SMC specialty), sM3 ETO (IEM custom)", "OEE, scrap %, energy intensity"], ["Deliver", "On-time delivery 86% flat", "sD1-sD3: order promising from constraint schedule", "OTD / perfect order"], ["Return", "No warranty analytics", "sDR1: link returns to serial passport", "Returns ppm"], ["Enable", "8/11 ERP, 40% machine data, varying definitions", "Common data model, MDM, OT/cyber", "Master-data accuracy, data coverage"]], "SCOR_ATTRIBUTES": [["Reliability", "On-time delivery 86%", "92%"], ["Responsiveness", "IEM quote-to-order lead time (multi-day)", "48-hour configured quotes"], ["Agility", "Single planning logic for all segments", "Segment-specific supply chains"], ["Cost", "Cost of sales 78.2% of revenue; energy 10.1%", "Energy 9.4%; procurement -1.75%"], ["Asset management", "Cash-to-cash 76 days; DIO 100; utilisation 67-81%", "Cash-to-cash ~62 days; DIO 88"]], "SMART_PRODUCT_UPTIME": {"values": {"Efficiency": "Customer downtime and energy per pump fall", "Lock-in": "Multi-year subscription and service contract", "Complementary": "Predictive spares auto-quoted before failure", "Novelty": "Outcome guarantee on pump availability"}, "layers": {"Physical": "Retrofit vibration and temperature kits on installed pumps", "Connectivity": "Gateway and cellular link, IEC 62443 security", "Digital": "Reuses the Group PdM models and platform; customer dashboard; Data-Act-compliant data access"}, "revenue": "Subscription per pump + pull-through spares; USD 4m revenue run-rate by June 2027 at ~40% EBITDA"}, "SOURCES": {"BCG74": ["BCG, AI Adoption in 2024: 74% of companies struggle to achieve and scale value (Oct 2024)", "https://www.bcg.com/press/24october2024-ai-adoption-in-2024-74-of-companies-struggle-to-achieve-and-scale-value"], "MCK_PDM": ["McKinsey, Manufacturing: Analytics unleashes productivity and profitability", "https://www.mckinsey.com/capabilities/operations/our-insights/manufacturing-analytics-unleashes-productivity-and-profitability"], "MCK_SC": ["McKinsey, Succeeding in the AI supply-chain revolution", "https://www.mckinsey.com/industries/metals-and-mining/our-insights/succeeding-in-the-ai-supply-chain-revolution"], "MCK_SCALE": ["McKinsey, Capturing value at scale in discrete manufacturing with Industry 4.0", "https://www.mckinsey.com/industries/industrials/our-insights/capturing-value-at-scale-in-discrete-manufacturing-with-industry-4-0"], "MCK_AI": ["McKinsey, Smartening up with Artificial Intelligence (visual inspection, maintenance benchmarks)", "https://www.mckinsey.com/~/media/mckinsey/industries/semiconductors/our%20insights/smartening%20up%20with%20artificial%20intelligence/smartening-up-with-artificial-intelligence.pdf"], "MCK_AFTER": ["McKinsey, Industrial aftermarket services: Growing the core", "https://www.mckinsey.com/industries/industrials/our-insights/industrial-aftermarket-services-growing-the-core"], "BCG_AFTER": ["BCG, Aftermarket Services Drive Growth and Higher Margins for Industrial Manufacturers (2025)", "https://www.bcg.com/publications/2025/aftermarket-services-drive-growth-for-industrial-manufacturers"], "WEF_GLN": ["World Economic Forum, Global Lighthouse Network recognizes 23 new sites (Jan 2026)", "https://www.weforum.org/press/2026/01/global-lighthouse-network-recognizes-23-new-sites-launches-ai-platform-for-industrial-transformation/"], "IEA_EMS": ["IEA, Industrial facilities could save billions by implementing energy management", "https://www.iea.org/commentaries/industrial-facilities-could-save-billions-by-implementing-energy-management"], "IEA_PRICE": ["IEA, Electricity 2026 - Prices", "https://www.iea.org/reports/electricity-2026/prices"], "RB_SUP": ["Roland Berger, Global Automotive Supplier Study 2025", "https://www.rolandberger.com/en/Media/Global-Automotive-Supplier-Study-Average-industry-profit-margin-drops-to-just.html"], "BCG_SUP": ["BCG, The 2026 Global Automotive Supplier Study", "https://www.bcg.com/publications/2026/the-2026-global-automotive-supplier-study"], "BF": ["Autocar Professional, Bharat Forge FY26 results", "https://www.autocarpro.in/news/bharat-forge-q4-net-profit-falls-175-revenue-rises-175-132472"], "SONA": ["Sona Comstar FY26 revenue and EBITDA", "https://news.tulsian.ai/news/company-results/sona-comstar-fy26-revenue-grows-26-to-4-475-crore.html"], "SUNDRAM": ["Autocar Professional, Sundram Fasteners FY26 results", "https://www.autocarpro.in/news/sundram-fasteners-fy26-net-profit-rises-94-crore-revenue-up-64-132344"], "KBL": ["Kirloskar Brothers FY26 results summary", "https://www.tradingview.com/news/urn:summary_document_slides:quartr.com:3327722:0-kirlosbros-fy26-revenue-rose-to-45-380-mn-with-ebitda-margin-at-13-7-and-pat-at-3-772-mn/"], "KSB": ["KSB, 2025 figures (EQS corporate news)", "https://www.eqs-news.com/news/corporate-news/geschaeftszahlen-2025-ksb-uebertrifft-vorjahr/052fb454-ab53-45df-9726-7d48ca74339b"], "KSBG": ["KSB Guard pump monitoring", "https://www.ksb.com/en-sg/guard"], "AKZO": ["AkzoNobel Q4 and FY2025 results", "https://www.akzonobel.com/en/media/media-releases/q4-2025"], "DAMO": ["Damodaran, EV/EBITDA multiples by industry (Jan 2026)", "https://pages.stern.nyu.edu/adamodar/New_Home_Page/datafile/vebitda.html"], "DATAACT": ["Travers Smith, EU Data Act compliance countdown for connected products", "https://www.traverssmith.com/knowledge/knowledge-container/the-eu-data-act-compliance-countdown-for-connected-products/"], "MACHREG": ["Nemko Digital, Guide to the 2027 EU Machinery Regulation", "https://digital.nemko.com/regulations/eu-machinery-regulation"], "AIACT": ["Gibson Dunn, EU AI Act omnibus agreement: postponed high-risk deadlines", "https://www.gibsondunn.com/eu-ai-act-omnibus-agreement-postponed-high-risk-deadlines-and-other-key-changes/"], "CBAM": ["Akin, EU CBAM financial obligations and proposed downstream scope expansion", "https://www.akingump.com/en/insights/alerts/eu-carbon-border-adjustment-mechanism-financial-obligations-commence-amid-proposed-scope-expansion-to-include-new-downstream-products"], "FTA": ["European Commission, EU-India trade agreement", "https://commission.europa.eu/topics/trade/eu-india-trade-agreement_en"], "S232": ["Sobel Network, Section 232 auto and auto parts tariffs in 2026", "https://sobelnet.com/section-232-auto-auto-parts-tariffs-what-importers-need-to-know-in-2026/"], "GARTNER": ["Gartner, Data quality: why it matters", "https://www.gartner.com/en/data-analytics/topics/data-quality"], "PWC_AUTO": ["PwC, Cash to drive the shift: working capital in the automotive sector", "https://www.pwc.de/en/automotive-industry/cash-to-drive-the-shift.html"], "PWC_WC": ["PwC, Working Capital Study 25/26", "https://www.pwc.co.uk/services/value-creation/insights/working-capital-study.html"]}, "SPRINGER_LEVELS": ["0 Absence", "1 Existence", "2 Survival", "3 Maturity"], "SPRINGER_MATURITY": [["Smart products and services", 0, 1], ["Production, logistics and procurement", 1, 2], ["R&D and product development", 1, 1], ["After-sales service", 0, 1], ["Pricing and promotion", 1, 2], ["Sales and distribution channels", 1, 2], ["Human resources", 1, 2], ["Information technologies", 1, 2], ["Smart finance", 1, 2], ["Business models", 0, 1], ["Strategic partnerships", 1, 2], ["Technology investments", 1, 2], ["Organisational structure and leadership", 0, 2]], "STRATEGIC_FIT": [{"seg": "Auto Components", "uncertainty": "Low (OEM schedules and releases)", "production": "Make-to-stock / make-to-order against OEM releases", "current": "Inefficient: inventory-heavy, scrap 4.8-6%, planning AI not trusted", "target": "Efficient: lean inventory, zero-defect, traceable", "eff_now": 35, "resp_now": 40, "eff_to": 70, "resp_to": 45}, {"seg": "Industrial Equipment & Machinery", "uncertainty": "High (configured and custom assemblies)", "production": "Assemble/configure-to-order for pumps and drive modules; engineer-to-order for custom assemblies", "current": "Under-responsive: multi-day quotes, 86% OTD", "target": "Responsive: 48-hour quotes, module postponement, constraint-first uptime", "eff_now": 45, "resp_now": 40, "eff_to": 50, "resp_to": 75}, {"seg": "Specialty Materials & Coatings", "uncertainty": "Medium (standard compounds MTS, specialty coatings MTO)", "production": "Batch make-to-stock and make-to-order", "current": "Cost-inefficient: energy 23% of revenue, 67% utilisation", "target": "Efficient batch: campaigning, golden batch, lower energy per batch", "eff_now": 25, "resp_now": 45, "eff_to": 60, "resp_to": 50}], "STRATEGY_CANVAS": {"factors": ["Price", "Lead time", "Configuration flexibility", "Reliability", "Service response", "Remote monitoring", "Outcome guarantee"], "Global majors": [2, 3, 4, 5, 4, 4, 3], "Low-cost local makers": [5, 3, 2, 2, 2, 1, 1], "Ironbridge IEM today": [3, 2, 3, 4, 3, 1, 1], "Ironbridge IEM 2027": [3, 4, 4, 4, 4, 4, 3]}, "SWOT": {"Strengths": ["Three-segment portfolio across auto, industrial and materials", "Low-cost India and Vietnam plants plus a Central Europe plant next to the largest export market", "IEM healthy: 8.1% reported, 10.6% ex-digital, growing 5% a year since 2022", "Digital assets already built: PdM on 150 machines, vision on 8 lines, 24-person central team, 8 of 11 plants on one ERP"], "Weaknesses": ["EBITDA 25 (2.1%); net debt 755 = 30x EBITDA; cash 30 vs short-term debt 180", "Digital programme returns 13 on 48 of opex (0.27x); adoption 60% / 45% manual review / 35% acceptance", "Inventory 100 days, up 13 days since 2022", "SMC loses money; energy is 23% of its revenue at 67% utilisation"], "Opportunities": ["Aftermarket services: KSB earns 33% of sales from service at 18% EBIT", "Energy management delivers ~11% savings in first years (IEA)", "EU-India FTA and China+1 favour the India/Vietnam footprint", "CBAM and Data Act reward suppliers that can share trusted part and product data"], "Threats": ["Forced sale of Auto Components if the turnaround fails within 18 months", "Rating downgrade and refinancing of 180 short-term debt", "OEM price-downs, EV transition and US tariffs", "Third-party service providers using Data Act access to Ironbridge pump data"]}, "TOC": [["Identify", "The Group constraint is cash and data, not capacity: AC runs at 72%, SMC at 67%; only IEM (81%, growing) has physical bottlenecks."], ["Exploit", "Fix what is already paid for (PdM, vision) before buying more; point PdM at IEM constraint assets where an hour lost is an hour lost for the whole system."], ["Subordinate", "Every other decision serves cash: expansion capex only at IEM, digital spend only with payback inside the mandate."], ["Elevate", "Data foundation (3 plants integrated, 60% machine data) lifts the data constraint that sank the planning pilot."], ["Repeat", "Re-run at each gate: once cash stabilises, the next constraint is commercial (IEM service, AC new customers)."]], "VALUE_CHAIN": {"Inbound logistics and procurement": ["C2 Spend intelligence and should-cost"], "Operations": ["A2 PdM fix and scale", "A3 Vision fix and scale", "C1 Energy intelligence", "C3 Golden batch", "C5 Digital performance management"], "Outbound logistics": ["E1 Inventory, S&OP, receivables", "OTD 86% to 92%"], "Marketing and sales": ["D1 Pricing and cost recovery", "D2 CPQ and GenAI configurator", "D4 Capacity monetisation"], "Service": ["D3 Uptime connected-pump service"], "Firm infrastructure": ["B1 Data foundation", "Value Office governance"], "Human resources": ["B3 Capability academy, 22 champions"], "Technology development": ["B2 OT connectivity and cyber"], "Procurement (support)": ["Outcome-based vendor contracts; licence renegotiation"]}, "VALUE_ROADMAP": [{"customer": "Vehicle OEMs (AC)", "core": "Dimensional accuracy, cost", "weakened": "Reliable delivery (86% OTD), competitive pricing", "disrupted": "ICE-only shafts volume", "new": "Serial-level quality passport, embedded-carbon data, EV-agnostic brackets and housings"}, {"customer": "Industrial customers (IEM)", "core": "Reliability, configuration flexibility", "weakened": "Lead times", "disrupted": "Reactive break-fix service", "new": "Uptime subscription, 48-hour configured quotes, predictive spares"}, {"customer": "Coatings customers (SMC)", "core": "Application performance", "weakened": "Batch consistency, technical support speed", "disrupted": "Paper certificates", "new": "Digital batch certificates, remote application support"}, {"customer": "Renewable-energy equipment makers (new for AC)", "core": "-", "weakened": "-", "disrupted": "-", "new": "Precision shafts and housings from idle AC capacity with digital traceability"}], "VERDICTS": [{"project": "Predictive maintenance", "verdict": "FIX, then SCALE to constraint assets", "evidence": "Downtime 12% to 9% (60% of target); 60% of alerts closed in window; benefit 5 vs recurring 3", "fix": "Integrate alerts with work orders, triage by criticality, technician copilot", "capex": "Approve 6.0 of 8.0 requested"}, {"project": "Vision inspection", "verdict": "FIX, then gated SCALE to 4 high-scrap AC lines", "evidence": "Scrap/rework 6.0% to 4.8% (48% of target); 45% of flagged rejects need manual review; benefit 7 vs recurring 4", "fix": "Engineering-change trigger for recalibration, active-learning labelling, target <=20% manual review", "capex": "Approve 1.0 now + 4.5 gated at month 6 of 12.0 requested"}, {"project": "Agentic supply-chain planning", "verdict": "STOP the agentic layer; redirect to S&OP and master data", "evidence": "Inventory days 90 to 94 (target 75); OTD flat at 86%; 35% of schedules accepted; benefit 1 vs recurring 6 incl. metered tokens", "fix": "Exit at the committed minimum (2.0 payable in 2026); keep rules and data; relaunch only when master data >=95% accurate", "capex": "Reject 10.0 requested"}], "VRIO": [["IEM installed base of pumps and drive modules", "Y", "Y", "Y", "N", "Unexploited sustained advantage: monetise through the Uptime service"], ["Proprietary machine, quality and process data", "Y", "Y", "Y", "N", "Only 40% accessible; organise it first (data foundation)"], ["OEM qualifications and 48-year customer relationships", "Y", "Y", "Y", "Partial", "Protect with quality passport and price-recovery discipline"], ["India/Vietnam/Central Europe footprint", "Y", "Partial", "Partial", "N", "Temporary advantage: needs network planning to exploit"], ["PdM / vision / planning software", "Y", "N", "N", "Partial", "Competitive parity: buy and configure, never build bespoke"], ["24-person central digital team", "Y", "N", "N", "Partial", "Parity: redeploy into business squads"]]}, "levers_raw": [{"id": "A1", "name": "Stop agentic supply-chain planning pilot; move planners to ERP-based S&OP", "theme": "Reset", "wave": 1, "split": {"AC": 0.6666666666666666, "IEM": 0.3333333333333333, "SMC": 0}, "gross": 0.0, "ramp": [0, 0, 0, 0, 0, 0], "rec": 0.0, "rec_start": 0, "oneoff": [0, 0, 0, 0, 0, 0], "capex": [0, 0, 0, 0, 0, 0], "revenue": 0.0, "kind": "reset"}, {"id": "A2F", "name": "Predictive maintenance FIX: work-order integration, alert triage, technician copilot", "theme": "Reset", "wave": 1, "split": {"AC": 0.6666666666666666, "IEM": 0.3333333333333333, "SMC": 0}, "gross": 2.5, "ramp": [0, 0.2, 0.6, 1, 1, 1], "rec": 0.0, "rec_start": 0, "oneoff": [0.5, 0.5, 0, 0, 0, 0], "capex": [1.0, 1.0, 0, 0, 0, 0], "revenue": 0.0, "kind": "reset"}, {"id": "A2S", "name": "Predictive maintenance SCALE to 150 constraint assets (AC and IEM)", "theme": "Reset", "wave": 2, "split": {"AC": 0.5, "IEM": 0.5, "SMC": 0}, "gross": 3.75, "ramp": [0, 0, 0, 0.2, 0.6, 1], "rec": 1.25, "rec_start": 3, "oneoff": [0, 0, 0, 0, 0, 0], "capex": [0, 0, 2.0, 2.0, 0, 0], "revenue": 0.0, "kind": "reset"}, {"id": "A3F", "name": "Vision inspection FIX: recalibration on engineering change, active learning, fewer false rejects", "theme": "Reset", "wave": 1, "split": {"AC": 0.6666666666666666, "IEM": 0, "SMC": 0.3333333333333333}, "gross": 3.5, "ramp": [0, 0.2, 0.6, 1, 1, 1], "rec": 0.0, "rec_start": 0, "oneoff": [1.0, 1.0, 0, 0, 0, 0], "capex": [0.5, 0.5, 0, 0, 0, 0], "revenue": 0.0, "kind": "reset"}, {"id": "A3S", "name": "Vision inspection SCALE to 4 high-scrap AC lines + digital quality passport", "theme": "Reset", "wave": 2, "split": {"AC": 1.0, "IEM": 0, "SMC": 0}, "gross": 3.1500000000000004, "ramp": [0, 0, 0, 0.2, 0.6, 1], "rec": 1.5, "rec_start": 3, "oneoff": [0, 0, 0, 0, 0, 0], "capex": [0, 0, 2.0, 2.0, 0.5, 0], "revenue": 0.0, "kind": "reset"}, {"id": "A4", "name": "Renegotiate PdM and vision licences/compute at Jan-2027 renewal (-15%)", "theme": "Reset", "wave": 3, "split": {"AC": 0.6666666666666666, "IEM": 0.16666666666666666, "SMC": 0.16666666666666666}, "gross": 1.05, "ramp": [0, 0, 0, 0, 1, 1], "rec": 0.0, "rec_start": 0, "oneoff": [0, 0, 0, 0, 0, 0], "capex": [0, 0, 0, 0, 0, 0], "revenue": 0.0, "kind": "reset"}, {"id": "B1", "name": "Minimum-viable data foundation: common data model, master data, 3 non-ERP plants integrated", "theme": "Foundation", "wave": 1, "split": {"AC": 0.4789915966386555, "IEM": 0.3403361344537815, "SMC": 0.18067226890756302}, "gross": 0.0, "ramp": [0, 0, 0, 0, 0, 0], "rec": 1.0, "rec_start": 1, "oneoff": [0.4, 0.4, 0.2, 0, 0, 0], "capex": [1.5, 1.5, 0.5, 0, 0, 0], "revenue": 0.0, "kind": "enabler"}, {"id": "B2", "name": "OT connectivity and cybersecurity baseline (IEC 62443 / NIS2)", "theme": "Foundation", "wave": 1, "split": {"AC": 0.4789915966386555, "IEM": 0.3403361344537815, "SMC": 0.18067226890756302}, "gross": 0.0, "ramp": [0, 0, 0, 0, 0, 0], "rec": 0.5, "rec_start": 1, "oneoff": [0, 0, 0, 0, 0, 0], "capex": [0.5, 0.5, 0, 0, 0, 0], "revenue": 0.0, "kind": "enabler"}, {"id": "B3", "name": "Capability academy and change management (22 plant digital champions)", "theme": "Foundation", "wave": 1, "split": {"AC": 0.4789915966386555, "IEM": 0.3403361344537815, "SMC": 0.18067226890756302}, "gross": 0.0, "ramp": [0, 0, 0, 0, 0, 0], "rec": 0.0, "rec_start": 0, "oneoff": [0.4, 0.4, 0.4, 0.3, 0.3, 0.2], "capex": [0, 0, 0, 0, 0, 0], "revenue": 0.0, "kind": "enabler"}, {"id": "C1", "name": "Energy intelligence: sub-metering, AI batch campaigning and set-points (SMC, AC forging, IEM)", "theme": "Cost", "wave": 1, "split": {"AC": 0.4038461538461539, "IEM": 0.08333333333333334, "SMC": 0.5128205128205129}, "gross": 7.800000000000001, "ramp": [0, 0.15, 0.35, 0.6, 0.85, 1], "rec": 0.8, "rec_start": 1, "oneoff": [0, 0.2, 0.2, 0, 0, 0], "capex": [0, 1.5, 1.5, 0, 0, 0], "revenue": 0.0, "kind": "cost"}, {"id": "C2", "name": "Spend intelligence and should-cost on USD 504m addressable spend", "theme": "Cost", "wave": 1, "split": {"AC": 0.4789915966386555, "IEM": 0.3403361344537815, "SMC": 0.18067226890756302}, "gross": 8.82, "ramp": [0, 0.1, 0.3, 0.5, 0.8, 1], "rec": 1.0, "rec_start": 1, "oneoff": [0, 0.15, 0.15, 0, 0, 0], "capex": [0, 0.5, 0, 0, 0, 0], "revenue": 0.0, "kind": "cost"}, {"id": "C3", "name": "Golden-batch process analytics for right-first-time batches (SMC)", "theme": "Cost", "wave": 2, "split": {"AC": 0, "IEM": 0, "SMC": 1.0}, "gross": 2.0, "ramp": [0, 0, 0.2, 0.45, 0.75, 1], "rec": 0.4, "rec_start": 2, "oneoff": [0, 0, 0.15, 0.15, 0, 0], "capex": [0, 0, 0.5, 0.5, 0, 0], "revenue": 0.0, "kind": "cost"}, {"id": "C4", "name": "GenAI back-office and service automation (close, order-to-cash, P2P, service desk)", "theme": "Cost", "wave": 2, "split": {"AC": 0.4789915966386555, "IEM": 0.3403361344537815, "SMC": 0.18067226890756302}, "gross": 6.12, "ramp": [0, 0, 0.15, 0.35, 0.65, 1], "rec": 0.8, "rec_start": 1, "oneoff": [0, 0.2, 0.2, 0, 0, 0], "capex": [0, 0.25, 0.25, 0, 0, 0], "revenue": 0.0, "kind": "cost"}, {"id": "C5", "name": "Digital performance management (OEE, shift boards) to cut overtime and contract labour", "theme": "Cost", "wave": 2, "split": {"AC": 0.5277777777777778, "IEM": 0.3333333333333333, "SMC": 0.1388888888888889}, "gross": 5.4, "ramp": [0, 0.1, 0.3, 0.55, 0.8, 1], "rec": 0.3, "rec_start": 2, "oneoff": [0, 0, 0, 0, 0, 0], "capex": [0, 0, 0.5, 0.5, 0, 0], "revenue": 0.0, "kind": "cost"}, {"id": "D1", "name": "Pricing and cost-recovery analytics (AC index pass-through; IEM/SMC value pricing)", "theme": "Growth", "wave": 1, "split": {"AC": 0.4337899543378995, "IEM": 0.36986301369863017, "SMC": 0.1963470319634703}, "gross": 6.57, "ramp": [0, 0.1, 0.3, 0.5, 0.8, 1], "rec": 0.6, "rec_start": 1, "oneoff": [0, 0, 0, 0, 0, 0], "capex": [0, 0, 0, 0, 0, 0], "revenue": 6.57, "kind": "growth"}, {"id": "D2", "name": "IEM digital CPQ and GenAI configurator (48-hour configured quotes)", "theme": "Growth", "wave": 2, "split": {"AC": 0, "IEM": 1.0, "SMC": 0}, "gross": 2.4299999999999997, "ramp": [0, 0, 0, 0.2, 0.55, 1], "rec": 0.6, "rec_start": 2, "oneoff": [0, 0, 0.15, 0.15, 0, 0], "capex": [0, 0, 0.75, 0.75, 0, 0], "revenue": 8.1, "kind": "growth"}, {"id": "D3", "name": "IEM 'Uptime' connected-pump service (condition monitoring subscription + predictive spares)", "theme": "Growth", "wave": 3, "split": {"AC": 0, "IEM": 1.0, "SMC": 0}, "gross": 1.6, "ramp": [0, 0, 0, 0.1, 0.45, 1], "rec": 0.5, "rec_start": 2, "oneoff": [0, 0, 0.1, 0.1, 0, 0], "capex": [0, 0, 0.5, 0.5, 0, 0], "revenue": 4.0, "kind": "growth"}, {"id": "D4", "name": "AC capacity monetisation: insource IEM machined parts, qualify renewable-energy precision parts", "theme": "Growth", "wave": 2, "split": {"AC": 1.0, "IEM": 0, "SMC": 0}, "gross": 3.0, "ramp": [0, 0, 0, 0.2, 0.5, 1], "rec": 0.2, "rec_start": 3, "oneoff": [0, 0, 0, 0, 0, 0], "capex": [0, 0, 0, 0, 0, 0], "revenue": 8.0, "kind": "growth"}, {"id": "E1", "name": "Inventory and receivables programme (segmentation, S&OP, DDMRP buffers, collections analytics)", "theme": "Cash", "wave": 1, "split": {"AC": 0.4789915966386555, "IEM": 0.3403361344537815, "SMC": 0.18067226890756302}, "gross": 0.0, "ramp": [0, 0, 0, 0, 0, 0], "rec": 0.5, "rec_start": 1, "oneoff": [0, 0, 0, 0, 0, 0], "capex": [0, 0, 0, 0, 0, 0], "revenue": 0.0, "kind": "enabler"}]};
+/* Ironbridge value engine - JavaScript port of ironbridge_model.run() for live what-if analysis */
+const IBQ = ["Q1-26", "Q2-26", "Q3-26", "Q4-26", "Q1-27", "Q2-27"];
+const IBNQ = 6;
+const IB_DEFAULTS = {
+  realisation: 1.0, delay_q: 0, drift_annual: -6.0, energy_pct: 6.5, spend_pct: 1.75,
+  pricing_ac_pct: 0.5, pricing_other_pct: 0.6, labour_pct: 3.0, backoffice_pct: 4.0,
+  dio_target: 88.0, dso_target: 48.5, interest_rate: 40 / 742.5, rate_shock_bp: 0.0,
+  capex_maint: 40.0, capex_expansion: 8.0, digital_capex_overrun: 0.0, structural: false, wacc: 0.11
+};
+const IB_SCENARIOS = {
+  "Bear": { realisation: 0.65, delay_q: 1, drift_annual: -12, rate_shock_bp: 150, dio_target: 94, dso_target: 51, digital_capex_overrun: 0.25 },
+  "Base": {},
+  "Bull": { realisation: 1.15, drift_annual: -3, dio_target: 85, structural: true }
+};
+
+function ibLevers(p) {
+  const rev_ac = 570, rev_iem = 405, rev_smc = 215;
+  const byRev = { AC: rev_ac / 1190, IEM: rev_iem / 1190, SMC: rev_smc / 1190 };
+  const Z = () => [0, 0, 0, 0, 0, 0];
+  const L = [];
+  const add = (o) => L.push(Object.assign({ recurring: 0, rec_start: 0, oneoff: Z(), capex: Z(), revenue_rr: 0, kind: "cost" }, o));
+  add({ id: "A1", theme: "Reset", split: { AC: 2 / 3, IEM: 1 / 3, SMC: 0 }, gross: 0, ramp: Z(), kind: "reset" });
+  add({ id: "A2F", theme: "Reset", split: { AC: 2 / 3, IEM: 1 / 3, SMC: 0 }, gross: 2.5, ramp: [0, 0.2, 0.6, 1, 1, 1], oneoff: [0.5, 0.5, 0, 0, 0, 0], capex: [1, 1, 0, 0, 0, 0], kind: "reset" });
+  add({ id: "A2S", theme: "Reset", split: { AC: 0.5, IEM: 0.5, SMC: 0 }, gross: 5 / 3 * 2.5 * 0.6 * 1.5, ramp: [0, 0, 0, 0.2, 0.6, 1], recurring: 1.25, rec_start: 3, capex: [0, 0, 2, 2, 0, 0], kind: "reset" });
+  add({ id: "A3F", theme: "Reset", split: { AC: 2 / 3, IEM: 0, SMC: 1 / 3 }, gross: 3.5, ramp: [0, 0.2, 0.6, 1, 1, 1], oneoff: [1, 1, 0, 0, 0, 0], capex: [0.5, 0.5, 0, 0, 0, 0], kind: "reset" });
+  add({ id: "A3S", theme: "Reset", split: { AC: 1, IEM: 0, SMC: 0 }, gross: 7 * 4 / 8 * 0.6 * 1.5, ramp: [0, 0, 0, 0.2, 0.6, 1], recurring: 1.5, rec_start: 3, capex: [0, 0, 2, 2, 0.5, 0], kind: "reset" });
+  add({ id: "A4", theme: "Reset", split: { AC: 2 / 3, IEM: 1 / 6, SMC: 1 / 6 }, gross: 0.15 * 7, ramp: [0, 0, 0, 0, 1, 1], kind: "reset" });
+  add({ id: "B1", theme: "Foundation", split: byRev, gross: 0, ramp: Z(), recurring: 1.0, rec_start: 1, oneoff: [0.4, 0.4, 0.2, 0, 0, 0], capex: [1.5, 1.5, 0.5, 0, 0, 0], kind: "enabler" });
+  add({ id: "B2", theme: "Foundation", split: byRev, gross: 0, ramp: Z(), recurring: 0.5, rec_start: 1, capex: [0.5, 0.5, 0, 0, 0, 0], kind: "enabler" });
+  add({ id: "B3", theme: "Foundation", split: byRev, gross: 0, ramp: Z(), oneoff: [0.4, 0.4, 0.4, 0.3, 0.3, 0.2], kind: "enabler" });
+  add({ id: "C1", theme: "Cost", split: { AC: 45 * 0.07 / 7.8, IEM: 25 * 0.026 / 7.8, SMC: 50 * 0.08 / 7.8 }, gross: 120 * p.energy_pct / 100, ramp: [0, 0.15, 0.35, 0.6, 0.85, 1], recurring: 0.8, rec_start: 1, oneoff: [0, 0.2, 0.2, 0, 0, 0], capex: [0, 1.5, 1.5, 0, 0, 0] });
+  add({ id: "C2", theme: "Cost", split: byRev, gross: 504 * p.spend_pct / 100, ramp: [0, 0.1, 0.3, 0.5, 0.8, 1], recurring: 1.0, rec_start: 1, oneoff: [0, 0.15, 0.15, 0, 0, 0], capex: [0, 0.5, 0, 0, 0, 0] });
+  add({ id: "C3", theme: "Cost", split: { AC: 0, IEM: 0, SMC: 1 }, gross: 2.0, ramp: [0, 0, 0.2, 0.45, 0.75, 1], recurring: 0.4, rec_start: 2, oneoff: [0, 0, 0.15, 0.15, 0, 0], capex: [0, 0, 0.5, 0.5, 0, 0] });
+  add({ id: "C4", theme: "Cost", split: byRev, gross: 153 * p.backoffice_pct / 100, ramp: [0, 0, 0.15, 0.35, 0.65, 1], recurring: 0.8, rec_start: 1, oneoff: [0, 0.2, 0.2, 0, 0, 0], capex: [0, 0.25, 0.25, 0, 0, 0] });
+  add({ id: "C5", theme: "Cost", split: { AC: 95 / 180, IEM: 60 / 180, SMC: 25 / 180 }, gross: 180 * p.labour_pct / 100, ramp: [0, 0.1, 0.3, 0.55, 0.8, 1], recurring: 0.3, rec_start: 2, capex: [0, 0, 0.5, 0.5, 0, 0] });
+  const prAc = rev_ac * p.pricing_ac_pct / 100, prOt = (rev_iem + rev_smc) * p.pricing_other_pct / 100, pr = prAc + prOt;
+  add({ id: "D1", theme: "Growth", split: pr ? { AC: prAc / pr, IEM: rev_iem * p.pricing_other_pct / 100 / pr, SMC: rev_smc * p.pricing_other_pct / 100 / pr } : { AC: 0, IEM: 0, SMC: 0 }, gross: pr, ramp: [0, 0.1, 0.3, 0.5, 0.8, 1], recurring: 0.6, rec_start: 1, revenue_rr: pr, kind: "growth" });
+  add({ id: "D2", theme: "Growth", split: { AC: 0, IEM: 1, SMC: 0 }, gross: 8.1 * 0.3, ramp: [0, 0, 0, 0.2, 0.55, 1], recurring: 0.6, rec_start: 2, oneoff: [0, 0, 0.15, 0.15, 0, 0], capex: [0, 0, 0.75, 0.75, 0, 0], revenue_rr: 8.1, kind: "growth" });
+  add({ id: "D3", theme: "Growth", split: { AC: 0, IEM: 1, SMC: 0 }, gross: 4.0 * 0.4, ramp: [0, 0, 0, 0.1, 0.45, 1], recurring: 0.5, rec_start: 2, oneoff: [0, 0, 0.1, 0.1, 0, 0], capex: [0, 0, 0.5, 0.5, 0, 0], revenue_rr: 4.0, kind: "growth" });
+  add({ id: "D4", theme: "Growth", split: { AC: 1, IEM: 0, SMC: 0 }, gross: 3.0, ramp: [0, 0, 0, 0.2, 0.5, 1], recurring: 0.2, rec_start: 3, revenue_rr: 8.0, kind: "growth" });
+  add({ id: "E1", theme: "Cash", split: byRev, gross: 0, ramp: Z(), recurring: 0.5, rec_start: 1, kind: "enabler" });
+  const d = Math.round(p.delay_q);
+  for (const l of L) {
+    if (d > 0) l.ramp = (Array(d).fill(0).concat(l.ramp)).slice(0, IBNQ);
+    l.gross *= p.realisation;
+  }
+  return L;
+}
+
+function ibPath(start, end, n, front) {
+  const out = [];
+  for (let i = 1; i <= n; i++) { const f = Math.pow(i / n, 1 / front); out.push(start + (end - start) * f); }
+  return out;
+}
+
+function ibRun(params, scenario) {
+  const p = Object.assign({}, IB_DEFAULTS, params || {});
+  scenario = scenario || "recommended";
+  const rate = p.interest_rate + p.rate_shock_bp / 10000;
+  const baseQ = (25 + 23) / 4;
+  const driftQ = [...Array(IBNQ).keys()].map(i => p.drift_annual * (i + 1) / 16);
+  const rev0 = 1190 / 4;
+  const revDrift = [...Array(IBNQ).keys()].map(i => (-570 * 0.04 + 405 * 0.02) * (i + 1) / 16);
+  const R = { scenario, params: p };
+  let ebitda = [], revenue = [], leverQ = [], oneQ = [], recQ = [], capexDig = [], capexQ = [], dwc = [], inv = [], rec = [];
+  const seg = { AC: [], IEM: [], SMC: [] };
+  let L = [], scp = [0, 0.25, 0.75, 0.75, 1.25, 1.25];
+  if (scenario === "status_quo") {
+    for (let i = 0; i < IBNQ; i++) {
+      const rem = i < 4 ? -1.5 : 0;
+      ebitda.push(baseQ + driftQ[i] + rem); revenue.push(rev0 + revDrift[i]);
+      leverQ.push(0); oneQ.push(-rem); recQ.push(0);
+      capexQ.push(45 / 4 + 25 / 4 + 5); capexDig.push(5); dwc.push(-2.5);
+      inv.push(255 + 1.5 * (i + 1)); rec.push(172 + 1.0 * (i + 1));
+    }
+  } else {
+    L = ibLevers(p);
+    const d = Math.round(p.delay_q);
+    const scpD = d > 0 ? Array(d).fill(0).concat(scp).slice(0, IBNQ) : scp;
+    const segScp = { AC: 2 / 3, IEM: 1 / 3, SMC: 0 };
+    for (let i = 0; i < IBNQ; i++) {
+      let ben = 0, rc = 0, one = 0, cap = 0, rv = 0; const s = { AC: 0, IEM: 0, SMC: 0 };
+      for (const l of L) {
+        const b = l.gross * l.ramp[i] / 4;
+        const r = (l.recurring && i >= l.rec_start) ? l.recurring / 4 : 0;
+        const o = l.oneoff[i];
+        ben += b; rc += r; one += o; cap += l.capex[i] * (1 + p.digital_capex_overrun);
+        rv += l.gross ? l.revenue_rr * l.ramp[i] / 4 : 0;
+        for (const k in s) s[k] += (b - r) * (l.split[k] || 0);
+      }
+      for (const k in s) { s[k] += scpD[i] * segScp[k]; seg[k].push(s[k]); }
+      ebitda.push(baseQ + driftQ[i] + ben - rc - one + scpD[i]);
+      revenue.push(rev0 + revDrift[i] + rv);
+      leverQ.push(ben + scpD[i]); oneQ.push(one); recQ.push(rc); capexDig.push(cap);
+    }
+    for (let i = 0; i < IBNQ; i++) capexQ.push(p.capex_maint / 4 + p.capex_expansion / 4 + capexDig[i]);
+    const dio0 = 255 / 930 * 365, dso0 = 172 / 1190 * 365;
+    let dioP = ibPath(dio0, p.dio_target, IBNQ, 1.3), dsoP = ibPath(dso0, p.dso_target, IBNQ, 1.3);
+    if (d > 0) {
+      dioP = Array(d).fill(dio0).concat(ibPath(dio0, p.dio_target, IBNQ - d, 1.3));
+      dsoP = Array(d).fill(dso0).concat(ibPath(dso0, p.dso_target, IBNQ - d, 1.3));
+    }
+    inv = dioP.map(x => x / 365 * 930); rec = dsoP.map(x => x / 365 * 1190);
+    let pi = 255, pr = 172;
+    for (let i = 0; i < IBNQ; i++) { dwc.push((pi - inv[i]) + (pr - rec[i])); pi = inv[i]; pr = rec[i]; }
+    if (p.structural) ebitda[IBNQ - 1] += 15 / 4;
+    R.scpQ = scpD;
+  }
+  let debt = 785, interest = [], fcf = [], debtQ = [];
+  for (let i = 0; i < IBNQ; i++) {
+    const it = rate / 4 * debt; const f = ebitda[i] - it + dwc[i] - capexQ[i];
+    debt -= f; interest.push(it); fcf.push(f); debtQ.push(debt);
+  }
+  const sum = a => a.reduce((x, y) => x + y, 0);
+  Object.assign(R, { ebitda_q: ebitda, revenue_q: revenue, lever_q: leverQ, oneoff_q: oneQ, recurring_q: recQ, capex_q: capexQ,
+    capex_digital_q: capexDig, dwc_q: dwc, interest_q: interest, fcf_q: fcf, debt_q: debtQ, inventory_q: inv, receivables_q: rec });
+  R.rr_q = ebitda.map((e, i) => (e + oneQ[i]) * 4);
+  R.ebitda_2026 = sum(ebitda.slice(0, 4)); R.ebitda_h1_27 = sum(ebitda.slice(4));
+  R.ebitda_exit_rr = R.rr_q[IBNQ - 1]; R.revenue_exit_rr = revenue[IBNQ - 1] * 4; R.margin_exit = R.ebitda_exit_rr / R.revenue_exit_rr;
+  R.fcf_2026 = sum(fcf.slice(0, 4)); R.fcf_h1_27 = sum(fcf.slice(4)); R.fcf_18m = sum(fcf);
+  R.net_debt_q = debtQ.map(x => x - 30); R.net_debt_exit = debtQ[IBNQ - 1] - 30;
+  R.nd_ebitda_exit = R.net_debt_exit / R.ebitda_exit_rr; R.interest_cover_exit = R.ebitda_exit_rr / (interest[IBNQ - 1] * 4);
+  R.wc_release_18m = sum(dwc); R.capex_18m = sum(capexQ); R.capex_digital_18m = sum(capexDig); R.oneoff_18m = sum(oneQ);
+  R.fcf_breakeven_ebitda = interest[IBNQ - 1] * 4 + p.capex_maint + p.capex_expansion + 5;
+  if (scenario !== "status_quo") {
+    const th = {};
+    for (const l of L) {
+      if (l.id === "A1") continue;
+      th[l.theme] = (th[l.theme] || 0) + l.gross * l.ramp[IBNQ - 1] - ((l.recurring && IBNQ - 1 >= l.rec_start) ? l.recurring : 0);
+    }
+    th.Reset = (th.Reset || 0) + R.scpQ[IBNQ - 1] * 4;
+    R.exit_bridge = [["EBITDA 2025", 25], ["Temporary 2025 costs roll off", 23], ["Market drift", p.drift_annual * 1.5],
+      ["A. Reset", th.Reset || 0], ["B. Foundation", th.Foundation || 0], ["C. AI cost levers", th.Cost || 0],
+      ["D. Growth", th.Growth || 0], ["E. Cash tools", th.Cash || 0]];
+    if (p.structural) R.exit_bridge.push(["Structural options", 15]);
+    R.exit_bridge.push(["Exit run-rate", R.ebitda_exit_rr]);
+    const temp = { AC: 23 * 2 / 3, IEM: 5, SMC: 8 / 3 }, sd = { AC: -8 * 1.5, IEM: 3, SMC: 0 };
+    const base = { AC: 5, IEM: 33, SMC: -13 };
+    const prl = L.find(l => l.id === "D1");
+    const revx = { AC: 570 * 0.94 + 8 * (Math.round(p.delay_q) === 0 ? 1 : 0.5) + prl.revenue_rr * prl.split.AC,
+      IEM: 405 * 1.03 + 8.1 + 4 + prl.revenue_rr * prl.split.IEM, SMC: 215 + prl.revenue_rr * prl.split.SMC };
+    R.segment_exit = {};
+    for (const k of ["AC", "IEM", "SMC"]) { const v = base[k] + temp[k] + sd[k] + seg[k][IBNQ - 1] * 4; R.segment_exit[k] = { ebitda: v, revenue: revx[k], margin: v / revx[k] }; }
+    R.levers = L;
+  }
+  return R;
+}
+
+
+
+</script>
+<script>
+(function(){
+"use strict";
+const C = DATA.content;
+const $ = s => document.querySelector(s);
+const fmt = (v, d=1) => (v<0?"-":"") + Math.abs(v).toFixed(d);
+const sgn = (v, d=1) => (v>=0?"+":"-") + Math.abs(v).toFixed(d);
+const pct = (v, d=1) => (v*100).toFixed(d) + "%";
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const NS = "http://www.w3.org/2000/svg";
+
+/* ---------- tooltip ---------- */
+const tip = $("#tip");
+document.addEventListener("pointermove", e => {
+  const t = e.target.closest ? e.target.closest("[data-tip]") : null;
+  if (!t) { tip.classList.remove("on"); return; }
+  tip.innerHTML = t.getAttribute("data-tip");
+  tip.classList.add("on");
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + w > innerWidth - 8) x = e.clientX - w - 14;
+  if (y + h > innerHeight - 8) y = e.clientY - h - 14;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+});
+
+/* ---------- svg helpers ---------- */
+function svg(w, h){ const s = document.createElementNS(NS,"svg"); s.setAttribute("viewBox",`0 0 ${w} ${h}`); s.setAttribute("role","img"); return s; }
+function el(tag, attrs, parent){ const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+function txt(parent, x, y, s, attrs){ const t = el("text", Object.assign({x, y}, attrs||{}), parent); t.textContent = s; return t; }
+function niceTicks(min, max, n){ const span = max-min || 1; const step0 = span/n; const mag = Math.pow(10, Math.floor(Math.log10(step0))); const err = step0/mag; const step = (err>=7.5?10:err>=3.5?5:err>=1.5?2:1)*mag; const lo = Math.floor(min/step)*step, hi = Math.ceil(max/step)*step; const out=[]; for (let v=lo; v<=hi+1e-9; v+=step) out.push(+v.toFixed(6)); return out; }
+function roundTop(x, y, w, h, r){ r = Math.min(r, w/2, Math.abs(h)); if (h >= 0) return `M${x},${y+h}V${y+r}Q${x},${y} ${x+r},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${y+h}Z`; return ""; }
+function barPath(x, y0, w, y1, r){ // vertical bar from baseline y0 to y1 with rounded data end
+  if (y1 < y0){ const h = y0-y1; r=Math.min(r,w/2,h); return `M${x},${y0}V${y1+r}Q${x},${y1} ${x+r},${y1}H${x+w-r}Q${x+w},${y1} ${x+w},${y1+r}V${y0}Z`; }
+  const h = y1-y0; r=Math.min(r,w/2,h); return `M${x},${y0}V${y1-r}Q${x},${y1} ${x+r},${y1}H${x+w-r}Q${x+w},${y1} ${x+w},${y1-r}V${y0}Z`;
+}
+function hbarPath(x0, y, x1, h, r){ // horizontal bar from x0 to x1, rounded at x1
+  if (x1 >= x0){ const w = x1-x0; r=Math.min(r,h/2,w); return `M${x0},${y}H${x1-r}Q${x1},${y} ${x1},${y+r}V${y+h-r}Q${x1},${y+h} ${x1-r},${y+h}H${x0}Z`; }
+  const w = x0-x1; r=Math.min(r,h/2,w); return `M${x0},${y}H${x1+r}Q${x1},${y} ${x1},${y+r}V${y+h-r}Q${x1},${y+h} ${x1+r},${y+h}H${x0}Z`;
+}
+function mount(id, s){ const m = document.getElementById(id); m.innerHTML = ""; m.appendChild(s); }
+function legend(id, items){ document.getElementById(id).innerHTML = items.map(i => `<span><i style="background:${i.c}${i.dash?';background:repeating-linear-gradient(90deg,'+i.c+' 0 4px,transparent 4px 7px)':''}"></i>${esc(i.n)}</span>`).join(""); }
+
+/* line chart: series [{n, v:[], c, dash}] labels [] */
+function lineChart(id, labels, series, o){
+  o = Object.assign({h:240, fmt:v=>fmt(v,0), unit:"", yMin:null}, o||{});
+  const W = 640, H = o.h, m = {l:44, r:62, t:14, b:26};
+  const all = series.flatMap(s=>s.v); let mn = Math.min(...all), mx = Math.max(...all);
+  if (o.yMin !== null) mn = Math.min(mn, o.yMin);
+  const ticks = niceTicks(mn, mx, 4); const y0 = ticks[0], y1 = ticks[ticks.length-1];
+  const X = i => m.l + i*(W-m.l-m.r)/(labels.length-1), Y = v => m.t + (1-(v-y0)/(y1-y0))*(H-m.t-m.b);
+  const s = svg(W,H);
+  ticks.forEach(t => { el("line",{x1:m.l,x2:W-m.r,y1:Y(t),y2:Y(t),stroke:css("--grid"),"stroke-width":1},s); txt(s, m.l-8, Y(t)+4, o.fmt(t), {"text-anchor":"end"}); });
+  labels.forEach((l,i) => txt(s, X(i), H-8, l, {"text-anchor":"middle"}));
+  series.forEach(se => {
+    const d = se.v.map((v,i)=>(i?"L":"M")+X(i)+","+Y(v)).join("");
+    el("path",{d, fill:"none", stroke:se.c, "stroke-width":2, "stroke-linejoin":"round","stroke-linecap":"round", "stroke-dasharray": se.dash? "5 4":"none"}, s);
+    const li = se.v.length-1;
+    el("circle",{cx:X(li), cy:Y(se.v[li]), r:4.5, fill:se.c, stroke:css("--surface"), "stroke-width":2}, s);
+    txt(s, X(li)+8, Y(se.v[li])+4, o.fmt(se.v[li])+o.unit, {class:"val"});
+  });
+  // hover columns
+  labels.forEach((l,i) => {
+    const w = (W-m.l-m.r)/(labels.length-1);
+    const r = el("rect",{x:X(i)-w/2, y:m.t, width:w, height:H-m.t-m.b, fill:"transparent"}, s);
+    r.setAttribute("data-tip", `<b>${esc(l)}</b><br>` + series.map(se=>`${esc(se.n)}: ${o.fmt(se.v[i])}${o.unit}`).join("<br>"));
+  });
+  mount(id, s);
+}
+
+/* waterfall: items [[label, value]] first = start total, last = end total */
+function waterfall(id, items, o){
+  o = Object.assign({h:270}, o||{});
+  const W = 680, H = o.h, m = {l:40, r:10, t:22, b:70};
+  let run = 0; const bars = [];
+  items.forEach((it,i) => {
+    const last = i === items.length-1, first = i===0;
+    if (first || last){ bars.push({l:it[0], a:0, b:it[1], v:it[1], tot:true}); run = it[1]; }
+    else { bars.push({l:it[0], a:run, b:run+it[1], v:it[1], tot:false}); run += it[1]; }
+  });
+  const vals = bars.flatMap(b=>[b.a,b.b]); const ticks = niceTicks(Math.min(0,...vals), Math.max(...vals), 4);
+  const y0=ticks[0], y1=ticks[ticks.length-1];
+  const Y = v => m.t + (1-(v-y0)/(y1-y0))*(H-m.t-m.b);
+  const band = (W-m.l-m.r)/bars.length, bw = Math.min(28, band*0.62);
+  const s = svg(W,H);
+  ticks.forEach(t => { el("line",{x1:m.l,x2:W-m.r,y1:Y(t),y2:Y(t),stroke:css("--grid")},s); txt(s,m.l-6,Y(t)+4,fmt(t,0),{"text-anchor":"end"}); });
+  el("line",{x1:m.l,x2:W-m.r,y1:Y(0),y2:Y(0),stroke:css("--axis")},s);
+  bars.forEach((b,i) => {
+    const x = m.l + i*band + (band-bw)/2;
+    const col = b.tot ? css("--total") : (b.v>=0 ? css("--pos") : css("--neg"));
+    let p;
+    if (b.tot) p = barPath(x, Y(0), bw, Y(b.b), 4);
+    else { const top = Y(Math.max(b.a,b.b)), bot = Y(Math.min(b.a,b.b)); p = `M${x},${top}H${x+bw}V${bot}H${x}Z`; }
+    const e = el("path",{d:p, fill:col}, s);
+    e.setAttribute("data-tip", `<b>${esc(b.l)}</b><br>${b.tot? fmt(b.v,1) : sgn(b.v,1)}`);
+    if (i < bars.length-1){ const yy = Y(b.tot? b.b : b.b); el("line",{x1:x+bw, x2:x+band, y1:yy, y2:yy, stroke:css("--axis"), "stroke-dasharray":"2 2"}, s); }
+    txt(s, x+bw/2, Y(Math.max(b.a,b.b))-6, b.tot? fmt(b.v,1) : sgn(b.v,1), {"text-anchor":"middle", class:"val"});
+    const words = b.l.split(" "); let line="", lines=[];
+    words.forEach(w => { if ((line+" "+w).trim().length > 11){ lines.push(line.trim()); line = w; } else line += " "+w; }); lines.push(line.trim());
+    lines.slice(0,4).forEach((ln,k) => txt(s, x+bw/2, H-m.b+14+k*12, ln, {"text-anchor":"middle", class:"lab"}));
+  });
+  mount(id, s);
+}
+
+/* horizontal bars: rows [{l, v, c, hi}] */
+function hbars(id, rows, o){
+  o = Object.assign({fmt:v=>fmt(v,1), unit:"", lw:190}, o||{});
+  const W = 640, rh = 26, m = {l:o.lw, r:56, t:6, b:22}, H = m.t + m.b + rows.length*rh;
+  const vals = rows.map(r=>r.v).concat(o.xMax!==undefined?[o.xMax]:[]); const ticks = niceTicks(Math.min(0,...vals), Math.max(0,...vals), 4);
+  const x0=ticks[0], x1=ticks[ticks.length-1]; const X = v => m.l + (v-x0)/(x1-x0)*(W-m.l-m.r);
+  const s = svg(W,H);
+  ticks.forEach(t => { el("line",{x1:X(t),x2:X(t),y1:m.t,y2:H-m.b,stroke:css("--grid")},s); txt(s,X(t),H-6,fmt(t,0)+o.unit,{"text-anchor":"middle"}); });
+  el("line",{x1:X(0),x2:X(0),y1:m.t,y2:H-m.b,stroke:css("--axis")},s);
+  rows.forEach((r,i) => {
+    const y = m.t + i*rh + 4, h = Math.min(18, rh-8);
+    const p = el("path",{d:hbarPath(X(0), y, X(r.v), h, 4), fill: r.c || css("--s1")}, s);
+    p.setAttribute("data-tip", `<b>${esc(r.l)}</b><br>${o.fmt(r.v)}${o.unit}`);
+    txt(s, m.l-8, y+h-5, r.l, {"text-anchor":"end", class: r.hi? "val":"lab"});
+    txt(s, r.v>=0? X(r.v)+6 : X(r.v)-6, y+h-5, o.fmt(r.v)+o.unit, {"text-anchor": r.v>=0?"start":"end", class:"val"});
+  });
+  mount(id, s);
+}
+
+/* grouped horizontal bars: rows [{l, a, b}] */
+function gbars(id, rows, o){
+  o = Object.assign({fmt:v=>fmt(v,1), unit:"%", lw:150, ca:css("--axis"), cb:css("--s1"), na:"2025", nb:"Exit"}, o||{});
+  const W = 640, rh = 44, m = {l:o.lw, r:56, t:6, b:22}, H = m.t + m.b + rows.length*rh;
+  const vals = rows.flatMap(r=>[r.a,r.b]); const ticks = niceTicks(Math.min(0,...vals), Math.max(0,...vals), 4);
+  const x0=ticks[0], x1=ticks[ticks.length-1]; const X = v => m.l + (v-x0)/(x1-x0)*(W-m.l-m.r);
+  const s = svg(W,H);
+  ticks.forEach(t => { el("line",{x1:X(t),x2:X(t),y1:m.t,y2:H-m.b,stroke:css("--grid")},s); txt(s,X(t),H-6,fmt(t,0)+o.unit,{"text-anchor":"middle"}); });
+  el("line",{x1:X(0),x2:X(0),y1:m.t,y2:H-m.b,stroke:css("--axis")},s);
+  rows.forEach((r,i) => {
+    const y = m.t + i*rh + 4, h = 16;
+    [[r.a,o.ca,o.na,0],[r.b,o.cb,o.nb,h+2]].forEach(([v,c,n,dy]) => {
+      const p = el("path",{d:hbarPath(X(0), y+dy, X(v), h, 4), fill:c}, s);
+      p.setAttribute("data-tip", `<b>${esc(r.l)}</b><br>${n}: ${o.fmt(v)}${o.unit}`);
+      txt(s, v>=0? X(v)+6 : X(v)-6, y+dy+h-4, o.fmt(v)+o.unit, {"text-anchor": v>=0?"start":"end", class:"val"});
+    });
+    txt(s, m.l-8, y+h+4, r.l, {"text-anchor":"end", class:"lab"});
+  });
+  mount(id, s);
+}
+
+/* ---------- state ---------- */
+let SC = "Base", CUSTOM = Object.assign({}, IB_DEFAULTS);
+const SQ = ibRun({}, "status_quo");
+function current(){
+  if (SC === "Status quo") return SQ;
+  if (SC === "Custom") return ibRun(CUSTOM);
+  return ibRun(IB_SCENARIOS[SC]);
+}
+const LABELS = { "Status quo":"Scenario: status quo (continue as-is)", "Base":"Scenario: recommended plan", "Bear":"Scenario: bear case", "Bull":"Scenario: bull case with structural options", "Custom":"Scenario: custom (sandbox)" };
+
+/* ---------- cockpit ---------- */
+function renderCockpit(){
+  const R = current(), isSQ = SC === "Status quo";
+  $("#scenLabel").textContent = LABELS[SC];
+  $("#heroV").innerHTML = `${fmt(R.ebitda_exit_rr,1)}<small>${pct(R.margin_exit)} margin</small>`;
+  const dv = R.ebitda_exit_rr - SQ.ebitda_exit_rr;
+  const hd = $("#heroD"); hd.textContent = isSQ ? "Status quo: no programme" : `${sgn(dv)} vs status quo (${fmt(SQ.ebitda_exit_rr)})`; hd.className = "delta " + (dv>=0?"up":"down");
+  const npv = SC==="Base" ? DATA.npv.npv : null;
+  const tiles = [
+    ["18-month free cash flow", fmt(R.fcf_18m), isSQ? "Jan-26 to Jun-27" : `${sgn(R.fcf_18m-SQ.fcf_18m)} vs status quo`],
+    ["Net debt, June 2027", fmt(R.net_debt_exit,0), `755 at end-2025`],
+    ["Net debt / EBITDA", fmt(R.nd_ebitda_exit)+"x", "30.2x at end-2025"],
+    ["Interest cover", fmt(R.interest_cover_exit,2)+"x", "0.63x in 2025"],
+    ["EBITDA 2026", fmt(R.ebitda_2026), "25.0 in 2025"],
+    ["Working capital released", fmt(R.wc_release_18m), "Inventory and receivables"],
+    ["Capex, 18 months", fmt(R.capex_18m), `Digital ${fmt(R.capex_digital_18m)}`],
+    ["Auto Components margin", R.segment_exit? pct(R.segment_exit.AC.margin) : "n/a", "0.9% in 2025"],
+  ];
+  $("#tiles").innerHTML = tiles.map(t=>`<div class="tile"><div class="l">${t[0]}</div><div class="v">${t[1]}</div><div class="d">${t[2]}</div></div>`).join("");
+  const lab = ["Q4-25"].concat(IBQ);
+  lineChart("chE", lab, [{n:"Status quo", v:[25].concat(SQ.rr_q), c:css("--s2"), dash:true}].concat(isSQ?[]:[{n:"Selected scenario", v:[25].concat(R.rr_q), c:css("--s1")}]), {yMin:0});
+  legend("lgE", [{n:"Selected scenario", c:css("--s1")}, {n:"Status quo", c:css("--s2"), dash:true}].slice(isSQ?1:0));
+  lineChart("chD", lab, [{n:"Status quo", v:[755].concat(SQ.net_debt_q), c:css("--s2"), dash:true}].concat(isSQ?[]:[{n:"Selected scenario", v:[755].concat(R.net_debt_q), c:css("--s1")}]), {});
+  legend("lgD", [{n:"Selected scenario", c:css("--s1")}, {n:"Status quo", c:css("--s2"), dash:true}].slice(isSQ?1:0));
+  if (!isSQ){
+    waterfall("chBridge", R.exit_bridge);
+    gbars("chSeg", [["Auto Components","AC"],["Industrial Equipment","IEM"],["Materials & Coatings","SMC"]].map(([l,k]) => ({l, a: DATA.exhibits.seg_ebitda[k][3]/DATA.exhibits.seg_rev[k][3]*100, b: R.segment_exit[k].margin*100})));
+    $("#acVal").textContent = `Auto Components EBITDA ${fmt(R.segment_exit.AC.ebitda)} at exit; at 6.43x auto-parts EV/EBITDA that is about ${fmt(R.segment_exit.AC.ebitda*6.43,0)} of value against about 32 today.`;
+  } else {
+    waterfall("chBridge", [["EBITDA 2025",25],["Temporary 2025 costs roll off",23],["Market drift",-9],["Exit run-rate", SQ.ebitda_exit_rr]]);
+    gbars("chSeg", [["Auto Components","AC"],["Industrial Equipment","IEM"],["Materials & Coatings","SMC"]].map(([l,k]) => ({l, a: DATA.exhibits.seg_ebitda[k][3]/DATA.exhibits.seg_rev[k][3]*100, b: DATA.exhibits.seg_ebitda[k][3]/DATA.exhibits.seg_rev[k][3]*100})));
+    $("#acVal").textContent = "No programme: segment margins keep eroding with market drift.";
+  }
+  // gates
+  const g = [
+    ["Gate 1 · month 6", R.rr_q[1] >= 45 && (R.dwc_q[0]+R.dwc_q[1]) >= 19, `Run-rate ${fmt(R.rr_q[1])} (≥45); WC ${fmt(R.dwc_q[0]+R.dwc_q[1])} (≥19)`],
+    ["Gate 2 · month 12", R.rr_q[3] >= 62 && (R.inventory_q[3]/930*365) <= 92, `Run-rate ${fmt(R.rr_q[3])} (≥62); DIO ${fmt(R.inventory_q[3]/930*365,0)} (≤92)`],
+    ["Gate 3 · month 18", R.ebitda_exit_rr >= 90 && R.nd_ebitda_exit <= 9 && (!R.segment_exit || R.segment_exit.AC.margin >= 0.06), `Run-rate ${fmt(R.ebitda_exit_rr)} (≥90); ND/EBITDA ${fmt(R.nd_ebitda_exit)}x (≤9x)`],
+  ];
+  $("#gates").innerHTML = g.map(x => `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="pill ${x[1]?"pass":"fail"}"><span class="dot"></span>${x[1]?"Pass":"Miss"}</span><span style="font-size:12.5px"><b>${x[0]}</b> · ${x[2]}</span></div>`).join("");
+}
+
+/* ---------- diagnosis ---------- */
+function renderDiag(){
+  const D = DATA.diagnosis;
+  waterfall("chWalk", D.walk.map(w=>[w[0].replace("Digital benefits realised in cost of sales","Digital benefits").replace("Gross-margin squeeze (price, energy, inputs)","Margin squeeze").replace("Revenue growth at 2022 gross margin","Revenue growth").replace("Non-digital personnel increase","Personnel").replace("Selling and customer support increase","Selling & support").replace("Digital and AI opex increase","Digital opex").replace("Other overheads decrease","Other overheads"), w[1]]));
+  const st = [["Net debt", "755", "180 short-term, 605 long-term, 30 cash"],["Net debt / EBITDA","30.2x","EBITDA 25"],["Interest cover","0.63x","Finance costs 40"],["Free cash flow 2025","-141","Funded by 85 of new debt"],["Inventory days","100","87 in 2022"],["Cash-to-cash cycle","76 days","65 in 2022"]];
+  $("#stress").innerHTML = st.map(t=>`<div class="tile"><div class="l">${t[0]}</div><div class="v">${t[1]}</div><div class="d">${t[2]}</div></div>`).join("");
+  const P = DATA.exhibits.pilots, cap = D.pilot_target_capture;
+  const pil = [["PdM","Predictive maintenance","Unplanned downtime","alerts closed in window",EX_fmt(P.PdM)],["Vision","Vision inspection","Scrap and rework","flagged rejects needing manual review",EX_fmt(P.Vision)],["SCP","Agentic planning","Pilot inventory days","schedules accepted without override",EX_fmt(P.SCP)]];
+  function EX_fmt(x){ return x; }
+  $("#pilots").innerHTML = pil.map(([k,n,metric,adopt,x]) => {
+    const c = cap[k], w = Math.max(0, Math.min(1,c))*100;
+    const f = DATA.exhibits.fof[k];
+    return `<div class="c4" style="grid-column:span 4;min-width:0"><div class="qbox"><h4>${n}</h4>
+      <div style="font-size:12.5px;color:var(--ink-2)">${metric}: ${x.baseline} → ${x.actual} (target ${x.target})</div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin:8px 0 3px"><span>Target captured</span><b>${(c*100).toFixed(0)}%</b></div>
+      <div class="meter" style="${c<0?'background:var(--mid)':''}"><span style="width:${w}%;${c<0?'':''}"></span></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin:8px 0 3px"><span>${adopt}</span><b>${(x.adoption*100).toFixed(0)}%</b></div>
+      <div class="meter"><span style="width:${x.adoption*100}%"></span></div>
+      <div style="font-size:12px;color:var(--muted);margin-top:8px">2025: benefit ${f.benefit} against opex ${f.opex} (run cost ${f.recurring}); capex 2023-25 ${f.capex_23_25}</div></div></div>`;
+  }).join("");
+  document.querySelectorAll("#pilots > div").forEach(d => d.className = "c4");
+  const S = D.segments;
+  gbars("chUnder", [["Auto Components","AC"],["Industrial Equipment","IEM"],["Materials & Coatings","SMC"]].map(([l,k])=>({l, a:S[k].reported_margin*100, b:S[k].ex_digital_margin*100})), {na:"Reported", nb:"Underlying"});
+  legend("lgWC", [{n:"Inventory days", c:css("--s1")},{n:"Receivable days", c:css("--s2")},{n:"Payable days", c:css("--s3")}]);
+  lineChart("chWC", ["2022","2023","2024","2025"], [{n:"Inventory days", v:D.dio, c:css("--s1")},{n:"Receivable days", v:D.dso, c:css("--s2")},{n:"Payable days", v:D.dpo, c:css("--s3")}], {h:220, yMin:40});
+  hbars("chBench", C.BENCHMARK.map(b => ({l:b[0], v:b[3], c: b[4]==="Case"? css("--s1") : css("--axis"), hi: b[4]==="Case"})), {unit:"%", lw:230});
+  $("#haves").innerHTML = "<tr><th>Capability</th><th>Best practice has</th><th>Ironbridge today</th></tr>" + C.HAVES.map(h=>`<tr><td><b>${esc(h[0])}</b></td><td>${esc(h[1])}</td><td>${esc(h[2])}</td></tr>`).join("");
+}
+
+/* ---------- strategy lab ---------- */
+function renderLab(){
+  $("#pestel").innerHTML = "<tr><th>Factor</th><th>Finding</th><th>Implication for Ironbridge</th></tr>" + C.PESTEL.map(p=>`<tr><td><b>${p[0]}</b></td><td>${esc(p[1])}</td><td>${esc(p[2])}</td></tr>`).join("");
+  const forces = ["Rivalry","Buyer power","Supplier power","Substitutes","New entrants"];
+  const heat = v => ["var(--seq1)","var(--seq2)","var(--seq3)","var(--seq4)","var(--seq5)"][v-1];
+  const dark = css("--surface").toLowerCase() !== "#ffffff";
+  const ink = v => dark ? (v>=4 ? "#0d1013" : "#ffffff") : (v>=3 ? "#ffffff" : "#14191e");
+  $("#porter").innerHTML = "<tr><th>Force</th><th class='n'>Auto</th><th class='n'>Equipment</th><th class='n'>Coatings</th></tr>" + forces.map(f=>`<tr><td>${f}</td>${["AC","IEM","SMC"].map(k=>`<td class="h" style="background:${heat(C.PORTER[k][f])};color:${ink(C.PORTER[k][f])}" data-tip="${k}: ${f} ${C.PORTER[k][f]} of 5">${C.PORTER[k][f]}</td>`).join("")}</tr>`).join("");
+  $("#porterNotes").innerHTML = ["AC","IEM","SMC"].map(k=>`<div><b>${k}:</b> ${esc(C.PORTER[k].note)}</div>`).join("");
+  // strategy canvas
+  const SCN = C.STRATEGY_CANVAS; const keys = ["Ironbridge IEM 2027","Ironbridge IEM today","Global majors","Low-cost local makers"]; const cols = [css("--s1"), css("--s2"), css("--s3"), css("--s4")];
+  legend("lgCanvas", keys.map((k,i)=>({n:k, c:cols[i], dash: i===1})));
+  canvasChart("chCanvas", SCN.factors, keys.map((k,i)=>({n:k, v:SCN[k], c:cols[i], dash:i===1})));
+  // SWOT
+  $("#swot").innerHTML = Object.entries(C.SWOT).map(([k,v])=>`<div class="qbox"><h4>${k}</h4><ul class="clean">${v.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`).join("");
+  $("#vrio").innerHTML = "<tr><th>Resource</th><th>V</th><th>R</th><th>I</th><th>O</th><th>Implication</th></tr>" + C.VRIO.map(r=>`<tr><td>${esc(r[0])}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${esc(r[5])}</td></tr>`).join("");
+  $("#costtree").innerHTML = "<tr><th>Line</th><th>Breakdown</th></tr>" + C.COST_PROFIT.map(r=>`<tr><td><b>${esc(r[0])}</b></td><td>${esc(r[1])}</td></tr>`).join("");
+  $("#vchain").innerHTML = "<tr><th>Activity</th><th>Initiatives</th></tr>" + Object.entries(C.VALUE_CHAIN).map(([k,v])=>`<tr><td><b>${esc(k)}</b></td><td>${v.map(esc).join("; ")}</td></tr>`).join("");
+  bcgChart("chBCG", C.BCG);
+  $("#bcgNotes").innerHTML = C.BCG.map(b=>`<div><b>${esc(b.seg)}</b> (${esc(b.quadrant)}): ${esc(b.posture)}</div>`).join("");
+  $("#ansoff").innerHTML = Object.entries(C.ANSOFF).map(([k,v])=>`<div class="qbox"><h4>${esc(k)}</h4><ul class="clean">${v.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`).join("");
+  $("#errc").innerHTML = Object.entries(C.ERRC).map(([k,v])=>`<div class="c3 qbox" style="grid-column:span 3"><h4>${k}</h4><ul class="clean">${v.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`).join("");
+  document.querySelectorAll("#errc > div").forEach(d=>{d.style.gridColumn=""; d.classList.add("c3");});
+  fitChart("chFit", C.STRATEGIC_FIT);
+  $("#fit").innerHTML = "<tr><th>Segment</th><th>Implied uncertainty</th><th>Production strategy</th><th>Today</th><th>Target</th></tr>" + C.STRATEGIC_FIT.map(f=>`<tr><td><b>${esc(f.seg)}</b></td><td>${esc(f.uncertainty)}</td><td>${esc(f.production)}</td><td>${esc(f.current)}</td><td>${esc(f.target)}</td></tr>`).join("");
+  $("#scor").innerHTML = "<tr><th>Process</th><th>Finding</th><th>Fix (SCOR processes)</th><th>Metric</th></tr>" + C.SCOR.map(r=>`<tr><td><b>${r[0]}</b></td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join("");
+  $("#scorattr").innerHTML = "<tr><th>Attribute</th><th>Today</th><th>Target</th></tr>" + C.SCOR_ATTRIBUTES.map(r=>`<tr><td><b>${r[0]}</b></td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join("");
+  $("#toc").innerHTML = C.TOC.map((t,i)=>`<div class="qbox" style="grid-column:span 12"><h4>${i+1}. ${t[0]}</h4><div style="font-size:12.5px">${esc(t[1])}</div></div>`).join("");
+  document.querySelectorAll("#toc > div").forEach(d=>{d.style.gridColumn="";d.className="qbox c12";});
+  $("#rogers").innerHTML = "<tr><th>Domain</th><th>Strategic theme</th><th>Application at Ironbridge</th></tr>" + C.ROGERS_DOMAINS.map(r=>`<tr><td><b>${r[0]}</b></td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join("");
+  $("#vpr").innerHTML = "<tr><th>Customer type</th><th>Core, build on</th><th>Weakened, bolster</th><th>Disrupted, deprioritise</th><th>New, create</th></tr>" + C.VALUE_ROADMAP.map(r=>`<tr><td><b>${esc(r.customer)}</b></td><td>${esc(r.core)}</td><td>${esc(r.weakened)}</td><td>${esc(r.disrupted)}</td><td>${esc(r.new)}</td></tr>`).join("");
+  const bar = []; Object.entries(C.HERBERT_BARRIERS).forEach(([g,obj]) => Object.entries(obj).forEach(([k,v]) => bar.push({l:`${g}: ${k}`, v, c: v<=1? css("--crit") : css("--s1")})));
+  hbars("chBarrier", bar, {fmt:v=>v.toFixed(0)+(v<=1?" (major barrier)":""), lw:250, xMax:5});
+  $("#build").innerHTML = "<tr><th>Stage</th><th>When</th><th>What happens</th></tr>" + C.HERBERT_BUILD.map(r=>`<tr><td><b>${r[0]}</b></td><td style="white-space:nowrap">${r[1]}</td><td>${esc(r[2])}</td></tr>`).join("");
+  dumbbell("chMat", C.SPRINGER_MATURITY.map(r=>({l:r[0], a:r[1], b:r[2]})), 0, 3, 250);
+  dumbbell("chEnab", C.ENABLERS.map(r=>({l:r[0], a:r[1], b:r[2]})), 1, 5, 120);
+  $("#enab").innerHTML = "<tr><th>Enabler</th><th>Target action</th></tr>" + C.ENABLERS.map(r=>`<tr><td><b>${r[0]}</b></td><td>${esc(r[3])}</td></tr>`).join("");
+  const sp = C.SMART_PRODUCT_UPTIME;
+  $("#smart").innerHTML = `<div class="two"><div class="qbox"><h4>Value types</h4><ul class="clean">${Object.entries(sp.values).map(([k,v])=>`<li><b>${k}:</b> ${esc(v)}</li>`).join("")}</ul></div><div class="qbox"><h4>IoT layers</h4><ul class="clean">${Object.entries(sp.layers).map(([k,v])=>`<li><b>${k}:</b> ${esc(v)}</li>`).join("")}</ul></div></div><div class="note">${esc(sp.revenue)}</div>`;
+  $("#disrupt").innerHTML = "<tr><th>Response</th><th>How</th><th>Decision</th></tr>" + C.DISRUPTIVE_RESPONSE_AC.map(r=>`<tr><td><b>${esc(r[0])}</b></td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join("");
+}
+function canvasChart(id, factors, series){
+  const W=640,H=250,m={l:34,r:14,t:12,b:54}; const X=i=>m.l+i*(W-m.l-m.r)/(factors.length-1), Y=v=>m.t+(1-(v-0)/5)*(H-m.t-m.b);
+  const s=svg(W,H);
+  [0,1,2,3,4,5].forEach(t=>{el("line",{x1:m.l,x2:W-m.r,y1:Y(t),y2:Y(t),stroke:css("--grid")},s);txt(s,m.l-8,Y(t)+4,t,{"text-anchor":"end"});});
+  factors.forEach((f,i)=>{ const w=f.split(" "); w.forEach((x,k)=>txt(s,X(i),H-m.b+16+k*12,x,{"text-anchor":"middle",class:"lab"})); });
+  series.forEach(se=>{ el("path",{d:se.v.map((v,i)=>(i?"L":"M")+X(i)+","+Y(v)).join(""),fill:"none",stroke:se.c,"stroke-width":2,"stroke-dasharray":se.dash?"5 4":"none"},s);
+    se.v.forEach((v,i)=>{ const c=el("circle",{cx:X(i),cy:Y(v),r:4,fill:se.c,stroke:css("--surface"),"stroke-width":2},s); c.setAttribute("data-tip",`<b>${esc(se.n)}</b><br>${esc(factors[i])}: ${v}`); }); });
+  mount(id,s);
+}
+function bcgChart(id, rows){
+  const W=640,H=320,m={l:48,r:20,t:16,b:40};
+  const xs=[-8,16], ys=[-10,10];
+  const X=v=>m.l+(v-xs[0])/(xs[1]-xs[0])*(W-m.l-m.r), Y=v=>m.t+(1-(v-ys[0])/(ys[1]-ys[0]))*(H-m.t-m.b);
+  const s=svg(W,H);
+  [-8,-4,0,4,8,12,16].forEach(t=>{el("line",{x1:X(t),x2:X(t),y1:m.t,y2:H-m.b,stroke:css("--grid")},s);txt(s,X(t),H-22,t+"%",{"text-anchor":"middle"});});
+  [-10,-5,0,5,10].forEach(t=>{el("line",{x1:m.l,x2:W-m.r,y1:Y(t),y2:Y(t),stroke:css("--grid")},s);txt(s,m.l-6,Y(t)+4,t+"%",{"text-anchor":"end"});});
+  el("line",{x1:X(5),x2:X(5),y1:m.t,y2:H-m.b,stroke:css("--axis"),"stroke-dasharray":"4 3"},s);
+  el("line",{x1:m.l,x2:W-m.r,y1:Y(2),y2:Y(2),stroke:css("--axis"),"stroke-dasharray":"4 3"},s);
+  txt(s,W-m.r-4,m.t+12,"Stars: invest",{"text-anchor":"end",class:"lab"}); txt(s,m.l+6,m.t+12,"Question marks: fix or fund",{class:"lab"});
+  txt(s,W-m.r-4,H-m.b-8,"Cash cows: defend and harvest",{"text-anchor":"end",class:"lab"}); txt(s,m.l+6,H-m.b-8,"Dogs: fix or exit",{class:"lab"});
+  txt(s,W/2,H-4,"EBITDA margin",{"text-anchor":"middle"});
+  txt(s,12,m.t+4,"Revenue growth, year on year",{transform:`rotate(-90 12 ${m.t+4})`,"text-anchor":"end"});
+  const E = DATA.exhibits, R = ibRun({});
+  const segs=[["AC","Auto"],["IEM","Equipment"],["SMC","Coatings"]]; const cols=[css("--s2"),css("--s1"),css("--s3")];
+  segs.forEach(([k,n],i)=>{
+    const rv=E.seg_rev[k], eb=E.seg_ebitda[k];
+    const p23={x:eb[1]/rv[1]*100, y:(rv[1]/rv[0]-1)*100}, p25={x:eb[3]/rv[3]*100, y:(rv[3]/rv[2]-1)*100};
+    const ex=R.segment_exit[k]; const px={x:ex.margin*100, y:(Math.pow(ex.revenue/rv[3],1/1.5)-1)*100};
+    el("path",{d:`M${X(p23.x)},${Y(p23.y)}L${X(p25.x)},${Y(p25.y)}`,stroke:cols[i],"stroke-width":1.5,"stroke-dasharray":"3 3",fill:"none"},s);
+    el("path",{d:`M${X(p25.x)},${Y(p25.y)}L${X(px.x)},${Y(px.y)}`,stroke:cols[i],"stroke-width":2,fill:"none"},s);
+    const a=el("circle",{cx:X(p23.x),cy:Y(p23.y),r:4,fill:css("--surface"),stroke:cols[i],"stroke-width":1.5},s); a.setAttribute("data-tip",`<b>${n} 2023</b><br>Growth ${p23.y.toFixed(1)}%, margin ${p23.x.toFixed(1)}%`);
+    const rr=6+Math.sqrt(rv[3])*0.9; const b=el("circle",{cx:X(p25.x),cy:Y(p25.y),r:rr,fill:cols[i],"fill-opacity":.2,stroke:cols[i],"stroke-width":2},s); b.setAttribute("data-tip",`<b>${n} 2025</b><br>Growth ${p25.y.toFixed(1)}%, margin ${p25.x.toFixed(1)}%, revenue ${rv[3]}`);
+    const c=el("circle",{cx:X(px.x),cy:Y(px.y),r:6,fill:cols[i],stroke:css("--surface"),"stroke-width":2},s); c.setAttribute("data-tip",`<b>${n} June 2027 target</b><br>Growth ${px.y.toFixed(1)}% a year, margin ${px.x.toFixed(1)}%`);
+    txt(s,X(px.x)+9,Y(px.y)+4,n+" 2027",{class:"val"});
+  });
+  mount(id,s);
+}
+function fitChart(id, rows){
+  const W=640,H=300,m={l:48,r:20,t:14,b:36}; const X=v=>m.l+v/100*(W-m.l-m.r), Y=v=>m.t+(1-v/100)*(H-m.t-m.b);
+  const s=svg(W,H);
+  [0,25,50,75,100].forEach(t=>{el("line",{x1:X(t),x2:X(t),y1:m.t,y2:H-m.b,stroke:css("--grid")},s);txt(s,X(t),H-18,t,{"text-anchor":"middle"});el("line",{x1:m.l,x2:W-m.r,y1:Y(t),y2:Y(t),stroke:css("--grid")},s);txt(s,m.l-6,Y(t)+4,t,{"text-anchor":"end"});});
+  el("path",{d:`M${X(15)},${Y(95)} Q${X(55)},${Y(65)} ${X(95)},${Y(15)}`,fill:"none",stroke:css("--axis"),"stroke-width":1.5,"stroke-dasharray":"4 3"},s);
+  txt(s,X(92),Y(24),"Efficient frontier",{"text-anchor":"end",class:"lab"});
+  txt(s,W/2,H-2,"Efficiency (cost, inventory, energy)",{"text-anchor":"middle"});
+  txt(s,12,m.t+4,"Responsiveness",{transform:`rotate(-90 12 ${m.t+4})`,"text-anchor":"end"});
+  const cols=[css("--s2"),css("--s1"),css("--s3")];
+  rows.forEach((r,i)=>{ el("line",{x1:X(r.eff_now),y1:Y(r.resp_now),x2:X(r.eff_to),y2:Y(r.resp_to),stroke:cols[i],"stroke-width":2},s);
+    el("circle",{cx:X(r.eff_now),cy:Y(r.resp_now),r:5,fill:css("--surface"),stroke:cols[i],"stroke-width":2},s);
+    const c=el("circle",{cx:X(r.eff_to),cy:Y(r.resp_to),r:6,fill:cols[i],stroke:css("--surface"),"stroke-width":2},s);
+    c.setAttribute("data-tip",`<b>${esc(r.seg)}</b><br>Today: ${esc(r.current)}<br>Target: ${esc(r.target)}`);
+    txt(s,X(r.eff_to)+9,Y(r.resp_to)+4,r.seg.split(" ")[0],{class:"val"}); });
+  mount(id,s);
+}
+function dumbbell(id, rows, lo, hi, lw){
+  const W=640,rh=24,m={l:lw,r:30,t:6,b:22},H=m.t+m.b+rows.length*rh; const X=v=>m.l+(v-lo)/(hi-lo)*(W-m.l-m.r);
+  const s=svg(W,H);
+  for(let t=lo;t<=hi;t++){el("line",{x1:X(t),x2:X(t),y1:m.t,y2:H-m.b,stroke:css("--grid")},s);txt(s,X(t),H-6,t,{"text-anchor":"middle"});}
+  rows.forEach((r,i)=>{ const y=m.t+i*rh+rh/2; txt(s,m.l-8,y+4,r.l,{"text-anchor":"end",class:"lab"});
+    el("line",{x1:X(r.a),x2:X(r.b),y1:y,y2:y,stroke:css("--s1"),"stroke-width":2},s);
+    el("circle",{cx:X(r.a),cy:y,r:5,fill:css("--surface"),stroke:css("--s1"),"stroke-width":2},s);
+    const c=el("circle",{cx:X(r.b),cy:y,r:5.5,fill:css("--s1"),stroke:css("--surface"),"stroke-width":2},s);
+    c.setAttribute("data-tip",`<b>${esc(r.l)}</b><br>Today ${r.a} → June 2027 ${r.b}`); });
+  mount(id,s);
+}
+
+/* ---------- portfolio ---------- */
+let sortKey = "net", sortDir = -1;
+function renderPort(){
+  $("#verdicts").innerHTML = C.VERDICTS.map(v=>{ const cls = v.verdict.startsWith("STOP")?"stop":"fix"; return `<div class="qbox c4" style="min-width:0"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap"><h4>${esc(v.project)}</h4><span class="chip ${cls}">${v.verdict.split(",")[0].split(" ")[0]}</span></div><div style="font-size:12.5px;font-weight:600;margin:4px 0">${esc(v.verdict)}</div><div style="font-size:12.5px;color:var(--ink-2)"><b>Evidence:</b> ${esc(v.evidence)}</div><div style="font-size:12.5px;color:var(--ink-2);margin-top:4px"><b>Action:</b> ${esc(v.fix)}</div><div style="font-size:12.5px;margin-top:4px"><b>${esc(v.capex)}</b></div></div>`; }).join("");
+  // impact-ease scatter
+  const sc = DATA.scoring; const W=640,H=320,m={l:44,r:16,t:14,b:40}; const X=v=>m.l+(v-1)/2*(W-m.l-m.r), Y=v=>m.t+(1-(v-1)/2)*(H-m.t-m.b);
+  const s=svg(W,H);
+  [1,1.5,2,2.5,3].forEach(t=>{el("line",{x1:X(t),x2:X(t),y1:m.t,y2:H-m.b,stroke:css("--grid")},s);txt(s,X(t),H-22,t,{"text-anchor":"middle"});el("line",{x1:m.l,x2:W-m.r,y1:Y(t),y2:Y(t),stroke:css("--grid")},s);txt(s,m.l-6,Y(t)+4,t,{"text-anchor":"end"});});
+  el("line",{x1:X(2),x2:X(2),y1:m.t,y2:H-m.b,stroke:css("--axis"),"stroke-dasharray":"4 3"},s); el("line",{x1:m.l,x2:W-m.r,y1:Y(2),y2:Y(2),stroke:css("--axis"),"stroke-dasharray":"4 3"},s);
+  txt(s,W-m.r-4,m.t+12,"Wave 1: quick wins",{"text-anchor":"end",class:"lab"}); txt(s,m.l+6,m.t+12,"Plan deliberately: needs enablers",{class:"lab"}); txt(s,m.l+6,H-m.b-8,"Stop or defer",{class:"lab"});
+  txt(s,W/2,H-4,"Ease of implementation",{"text-anchor":"middle"}); txt(s,12,m.t+4,"Strategic impact",{transform:`rotate(-90 12 ${m.t+4})`,"text-anchor":"end"});
+  const placed=[];
+  sc.forEach(p=>{ const rej = p.initiative.startsWith("X"); const cx=X(p.ease), cy=Y(p.impact); const c=el("circle",{cx,cy,r:6,fill: rej? css("--s8"): css("--s1"),stroke:css("--surface"),"stroke-width":2},s);
+    c.setAttribute("data-tip",`<b>${esc(p.initiative)}</b><br>Impact ${p.impact.toFixed(2)} · Ease ${p.ease.toFixed(2)}`);
+    let lx = cx+8, ly = cy+4, anchor="start"; if (cx > W-m.r-30){ lx = cx-8; anchor="end"; }
+    while (placed.some(q=>Math.abs(q[0]-lx)<24 && Math.abs(q[1]-ly)<11)) ly += 12;
+    placed.push([lx,ly]); txt(s,lx,ly,p.initiative.split(" ")[0],{class:"lab","text-anchor":anchor}); });
+  mount("chIE",s);
+  // optimiser bars
+  const cand = DATA.portfolio.candidates.slice().sort((a,b)=>b.npv-a.npv);
+  const sel = new Set(DATA.portfolio.selected);
+  hbars("chOpt", cand.map(c=>({l:`${c.id} ${c.name.split(" (")[0].split(":")[0].slice(0,38)}`, v:c.npv, c: sel.has(c.id)? css("--s1") : (c.gated? css("--s4") : css("--s8"))})), {lw:260, fmt:v=>fmt(v,1)});
+  $("#optNote").textContent = `Selected ${DATA.portfolio.selected.length} candidates for capex ${fmt(DATA.portfolio.capex)} and one-off opex ${fmt(DATA.portfolio.oneoff)} under a 25 cap; vision scale (yellow) is held as a ${fmt(DATA.portfolio.gated_capex)} gated tranche; all six rejected alternatives (red) have negative NPV.`;
+  renderLeverTable();
+  $("#gvb").innerHTML = Object.entries(C.GROUP_VS_BU).map(([k,v])=>`<div class="qbox c3" style="min-width:0"><h4>${esc(k)}</h4><ul class="clean">${v.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`).join("");
+}
+function renderLeverTable(){
+  const R = SC==="Status quo" ? ibRun({}) : current();
+  const names = Object.fromEntries(DATA.recommended.levers.map(l=>[l.id,l.name]));
+  const rows = R.levers.map(l => ({id:l.id, name:names[l.id]||l.id, theme:l.theme, gross: l.id==="A1"? 6.0*1 : l.gross, rec: l.id==="A1"? 1.0 : l.recurring, capex: l.capex.reduce((a,b)=>a+b,0)*(1+R.params.digital_capex_overrun), one: l.oneoff.reduce((a,b)=>a+b,0) + (l.id==="A1"?0.5:0)}));
+  rows.forEach(r => r.net = r.gross - r.rec);
+  rows.sort((a,b) => (typeof a[sortKey]==="string"? a[sortKey].localeCompare(b[sortKey]) : a[sortKey]-b[sortKey]) * sortDir);
+  const cols = [["id","ID"],["name","Initiative"],["theme","Theme"],["gross","Gross run-rate"],["rec","Run cost"],["net","Net run-rate"],["capex","Capex"],["one","One-off opex"]];
+  const tot = k => rows.reduce((a,r)=>a+r[k],0);
+  $("#levers").innerHTML = "<tr>" + cols.map(([k,n])=>`<th class="${["gross","rec","net","capex","one"].includes(k)?'n':''}" data-k="${k}" style="cursor:pointer">${n}${sortKey===k?(sortDir>0?" ▲":" ▼"):""}</th>`).join("") + "</tr>" +
+    rows.map(r=>`<tr><td>${r.id}</td><td>${esc(r.name)}</td><td>${r.theme}</td><td class="n">${fmt(r.gross,2)}</td><td class="n">${fmt(r.rec,2)}</td><td class="n"><b>${fmt(r.net,2)}</b></td><td class="n">${fmt(r.capex,2)}</td><td class="n">${fmt(r.one,2)}</td></tr>`).join("") +
+    `<tr><td></td><td><b>Total</b></td><td></td><td class="n"><b>${fmt(tot("gross"),1)}</b></td><td class="n"><b>${fmt(tot("rec"),1)}</b></td><td class="n"><b>${fmt(tot("net"),1)}</b></td><td class="n"><b>${fmt(tot("capex"),1)}</b></td><td class="n"><b>${fmt(tot("one"),1)}</b></td></tr>`;
+  document.querySelectorAll("#levers th[data-k]").forEach(th => th.onclick = () => { const k = th.dataset.k; if (sortKey===k) sortDir*=-1; else { sortKey=k; sortDir=-1; } renderLeverTable(); });
+}
+
+/* ---------- financials ---------- */
+let tornMode = "e";
+function renderFin(){
+  const R = current();
+  const rows = [["Revenue", R.revenue_q.map(v=>v)],["EBITDA", R.ebitda_q],["of which one-off costs", R.oneoff_q.map(v=>-v)],["Interest", R.interest_q.map(v=>-v)],["Working-capital release", R.dwc_q],["Capex", R.capex_q.map(v=>-v)],["Free cash flow", R.fcf_q],["Net debt (end)", R.net_debt_q]];
+  $("#qtable").innerHTML = "<tr><th>USD m</th>" + IBQ.map(q=>`<th class="n">${q}</th>`).join("") + `<th class="n">18m</th></tr>` + rows.map(([n,v])=>`<tr><td>${n==="Free cash flow"||n==="EBITDA"?"<b>"+n+"</b>":n}</td>${v.map(x=>`<td class="n">${fmt(x,1)}</td>`).join("")}<td class="n"><b>${n==="Net debt (end)"? fmt(v[v.length-1],0) : fmt(v.reduce((a,b)=>a+b,0),1)}</b></td></tr>`).join("");
+  const scs = [["Status quo", SQ], ["Bear", ibRun(IB_SCENARIOS.Bear)], ["Recommended", ibRun({})], ["Bull", ibRun(IB_SCENARIOS.Bull)]];
+  $("#scentable").innerHTML = "<tr><th>Scenario</th><th class='n'>Exit EBITDA</th><th class='n'>Margin</th><th class='n'>18m FCF</th><th class='n'>ND/EBITDA</th></tr>" + scs.map(([n,r])=>`<tr><td><b>${n}</b></td><td class="n">${fmt(r.ebitda_exit_rr)}</td><td class="n">${pct(r.margin_exit)}</td><td class="n">${fmt(r.fcf_18m)}</td><td class="n">${fmt(r.nd_ebitda_exit)}x</td></tr>`).join("");
+  drawTornado();
+  // Monte Carlo
+  const mc = DATA.monte_carlo; const counts = mc.hist_ebitda, edges = mc.hist_edges;
+  const W=640,H=240,m={l:40,r:14,t:18,b:30}; const mx=Math.max(...counts); const x0=edges[0], x1=edges[edges.length-1];
+  const X=v=>m.l+(v-x0)/(x1-x0)*(W-m.l-m.r), Y=v=>m.t+(1-v/mx)*(H-m.t-m.b);
+  const s=svg(W,H); niceTicks(x0,x1,6).filter(t=>t>=x0&&t<=x1).forEach(t=>{txt(s,X(t),H-10,fmt(t,0),{"text-anchor":"middle"});});
+  el("line",{x1:m.l,x2:W-m.r,y1:Y(0),y2:Y(0),stroke:css("--axis")},s);
+  counts.forEach((c,i)=>{ const xa=X(edges[i])+1, xb=X(edges[i+1])-1; const p=el("path",{d:barPath(xa,Y(0),Math.max(1,xb-xa),Y(c),3),fill:css("--s1")},s); p.setAttribute("data-tip",`${fmt(edges[i],0)} to ${fmt(edges[i+1],0)}: ${c} runs (${(c/mc.n*100).toFixed(1)}%)`); });
+  [["P10",mc.ebitda_exit.p10],["P50",mc.ebitda_exit.p50],["P90",mc.ebitda_exit.p90]].forEach(([n,v])=>{ el("line",{x1:X(v),x2:X(v),y1:m.t,y2:Y(0),stroke:css("--ink"),"stroke-dasharray":"3 3"},s); txt(s,X(v),m.t-4,`${n} ${fmt(v,0)}`,{"text-anchor":"middle",class:"val"}); });
+  mount("chMC",s);
+  $("#mcNote").textContent = `Probability of at least 60: ${(mc.prob_ebitda_ge_60*100).toFixed(0)}%; at least 75: ${(mc.prob_ebitda_ge_75*100).toFixed(0)}%; at least double the status quo: ${(mc.prob_ebitda_ge_2x_sq*100).toFixed(0)}%.`;
+  // NPV flows
+  const n = DATA.npv, yrs=["2026","2027","2028","2029","2030"];
+  const W2=640,H2=230,m2={l:40,r:14,t:18,b:28}; const vals=n.cash_flows_ex_wc.map((v,i)=>[v, v + (n.cash_flows[i]-n.cash_flows_ex_wc[i])]).flat();
+  const tk=niceTicks(Math.min(0,...vals),Math.max(...vals),4); const Y2=v=>m2.t+(1-(v-tk[0])/(tk[tk.length-1]-tk[0]))*(H2-m2.t-m2.b); const band=(W2-m2.l-m2.r)/5;
+  const s2=svg(W2,H2); tk.forEach(t=>{el("line",{x1:m2.l,x2:W2-m2.r,y1:Y2(t),y2:Y2(t),stroke:css("--grid")},s2);txt(s2,m2.l-6,Y2(t)+4,fmt(t,0),{"text-anchor":"end"});});
+  yrs.forEach((y,i)=>{ const a=n.cash_flows_ex_wc[i], w=n.cash_flows[i]-a; const x=m2.l+i*band+band/2-12;
+    const p=el("path",{d:barPath(x,Y2(0),24,Y2(a),4),fill:css("--s1")},s2); p.setAttribute("data-tip",`<b>${y}</b><br>Benefits net of capex ${fmt(a)}<br>Working capital ${fmt(w)}`);
+    if (Math.abs(w)>0.01){ const base = a>=0? a:0; const q=el("path",{d:barPath(x, Y2(base)-(a>=0?2:0), 24, Y2(base+w)-(a>=0?2:0), 4),fill:css("--s3")},s2); q.setAttribute("data-tip",`<b>${y}</b><br>Working capital ${fmt(w)}`); }
+    txt(s2,x+12,H2-8,y,{"text-anchor":"middle"}); txt(s2,x+12,Y2(a>=0? a+Math.max(w,0) : Math.max(w,0))-8,fmt(a+w,0),{"text-anchor":"middle",class:"val"}); });
+  el("line",{x1:m2.l,x2:W2-m2.r,y1:Y2(0),y2:Y2(0),stroke:css("--axis")},s2);
+  mount("chNPV",s2);
+  const b = DATA.breakeven;
+  const bev = [["NPV 2026-30 at 11%", fmt(n.npv,0), `${fmt(n.npv_ex_wc,0)} excluding working capital`],["Break-even realisation", (b.realisation_for_npv_zero*100).toFixed(0)+"%", "Share of benefits needed for NPV of zero"],["Cash saved at zero benefit", fmt(b.fcf_18m_at_zero_benefit - b.fcf_18m_status_quo,0), "Capex and working-capital discipline alone"],["FCF breakeven EBITDA", fmt(b.fcf_breakeven_ebitda,1), "Interest + maintenance + expansion + sustaining digital"],["Run-rate return", fmt(n.roi_run_rate,2)+"x a year", `${fmt(n.run_rate_net)} net on ${fmt(n.investment_18m)} invested`],["Payback", "Q3 2027", "On benefits alone; cash-positive from Q1 2026 with working capital"]];
+  $("#bev").innerHTML = bev.map(t=>`<div class="tile"><div class="l">${t[0]}</div><div class="v">${t[1]}</div><div class="d">${t[2]}</div></div>`).join("");
+}
+function drawTornado(){
+  const rows = (tornMode==="e" ? DATA.tornado_ebitda : DATA.tornado_fcf).filter(r => Math.abs(r.high-r.low) > 0.05);
+  $("#tornSub").textContent = tornMode==="e" ? "Exit EBITDA run-rate; bars show the low and high case around the base" : "18-month free cash flow; bars show the low and high case around the base";
+  const base = rows[0].base; const W=640,rh=28,m={l:220,r:50,t:20,b:22},H=m.t+m.b+rows.length*rh;
+  const vals = rows.flatMap(r=>[r.low,r.high,base]); const tk=niceTicks(Math.min(...vals),Math.max(...vals),5); const X=v=>m.l+(v-tk[0])/(tk[tk.length-1]-tk[0])*(W-m.l-m.r);
+  const s=svg(W,H); tk.forEach(t=>{el("line",{x1:X(t),x2:X(t),y1:m.t,y2:H-m.b,stroke:css("--grid")},s);txt(s,X(t),H-6,fmt(t,0),{"text-anchor":"middle"});});
+  rows.forEach((r,i)=>{ const y=m.t+i*rh+5, h=17; const lo=Math.min(r.low,r.high), hi=Math.max(r.low,r.high);
+    if (lo<base){ const p=el("path",{d:hbarPath(X(base),y,X(lo),h,4),fill:css("--neg")},s); p.setAttribute("data-tip",`<b>${esc(r.driver)}</b><br>Downside ${fmt(lo)}`); }
+    if (hi>base){ const p=el("path",{d:hbarPath(X(base),y,X(hi),h,4),fill:css("--pos")},s); p.setAttribute("data-tip",`<b>${esc(r.driver)}</b><br>Upside ${fmt(hi)}`); }
+    txt(s,m.l-8,y+h-4,r.driver,{"text-anchor":"end",class:"lab"}); if (hi-lo>0.05) txt(s,X(hi)+6,y+h-4,fmt(hi-lo,1),{class:"val"}); });
+  el("line",{x1:X(base),x2:X(base),y1:m.t-6,y2:H-m.b,stroke:css("--ink"),"stroke-width":1.5},s); txt(s,X(base),m.t-8,`Base ${fmt(base)}`,{"text-anchor":"middle",class:"val"});
+  mount("chTorn",s);
+}
+
+/* ---------- roadmap ---------- */
+function renderRoad(){
+  const rows = C.ROADMAP; const W=980,rh=26,m={l:300,r:16,t:26,b:10},H=m.t+m.b+rows.length*rh; const X=mo=>m.l+(mo-1)/18*(W-m.l-m.r);
+  const s=svg(W,H); const wc={1:css("--s1"),2:css("--s3"),3:css("--s7")};
+  for(let mo=1;mo<=19;mo++){ el("line",{x1:X(mo),x2:X(mo),y1:m.t-4,y2:H-m.b,stroke:css("--grid")},s); if(mo<=18) txt(s,X(mo)+ (W-m.l-m.r)/36,m.t-10,"M"+mo,{"text-anchor":"middle"}); }
+  [7,13,19].forEach(g=>el("line",{x1:X(g),x2:X(g),y1:m.t-4,y2:H-m.b,stroke:css("--ink"),"stroke-width":1.5,"stroke-dasharray":"4 3"},s));
+  rows.forEach((r,i)=>{ const y=m.t+i*rh+5; txt(s,m.l-8,y+13,r[0],{"text-anchor":"end",class:"lab"});
+    const p=el("rect",{x:X(r[1]),y,width:Math.max(6,X(r[2]+1)-X(r[1])-2),height:16,rx:4,fill:wc[r[3]]},s); p.setAttribute("data-tip",`<b>${esc(r[0])}</b><br>Months ${r[1]}-${r[2]} · wave ${r[3]}<br>${esc(r[4])}`); });
+  mount("chGantt",s);
+  $("#kpis").innerHTML = "<tr><th>KRA</th><th>KPI</th><th class='n'>Baseline</th><th class='n'>Month 6</th><th class='n'>Month 12</th><th class='n'>Month 18</th><th>Owner</th><th>Type</th></tr>" + C.KPIS.map(k=>`<tr><td>${esc(k[0])}</td><td><b>${esc(k[1])}</b></td><td class="n">${esc(k[2])}</td><td class="n">${esc(k[3])}</td><td class="n">${esc(k[4])}</td><td class="n"><b>${esc(k[5])}</b></td><td>${esc(k[6])}</td><td>${esc(k[7])}</td></tr>`).join("");
+  $("#org").innerHTML = Object.entries(C.ORG).map(([k,v])=>`<b>${esc(k)}</b><span>${esc(v)}</span>`).join("");
+  // risk heat
+  const lv={L:0,M:1,H:2}; const W3=640,H3=300,m3={l:70,r:10,t:10,b:40}; const cw=(W3-m3.l-m3.r)/3, ch=(H3-m3.t-m3.b)/3;
+  const s3=svg(W3,H3); const tone=(a,b)=>{const v=a+b; return v>=4?css("--seq4"):v>=3?css("--seq3"):v>=2?css("--seq2"):css("--seq1");};
+  for(let li=0;li<3;li++) for(let ii=0;ii<3;ii++){ el("rect",{x:m3.l+ii*cw+1,y:m3.t+(2-li)*ch+1,width:cw-2,height:ch-2,rx:6,fill:tone(li,ii),"fill-opacity":.55},s3); }
+  ["Low","Medium","High"].forEach((n,i)=>{ txt(s3,m3.l+i*cw+cw/2,H3-18,n,{"text-anchor":"middle"}); txt(s3,m3.l-8,m3.t+(2-i)*ch+ch/2+4,n,{"text-anchor":"end"}); });
+  txt(s3,m3.l+(W3-m3.l-m3.r)/2,H3-2,"Impact",{"text-anchor":"middle"}); txt(s3,14,m3.t+4,"Likelihood",{transform:`rotate(-90 14 ${m3.t+4})`,"text-anchor":"end"});
+  const buckets={}; C.RISKS.forEach((r,i)=>{ const k=r[1]+r[2]; (buckets[k]=buckets[k]||[]).push(i); });
+  Object.entries(buckets).forEach(([k,ids])=>{ const li=lv[k[0]], ii=lv[k[1]]; ids.forEach((id,j)=>{ const cx=m3.l+ii*cw+26+ (j%5)*34, cy=m3.t+(2-li)*ch+26+Math.floor(j/5)*34; const c=el("circle",{cx,cy,r:13,fill:css("--surface"),stroke:css("--ink"),"stroke-width":1.5},s3); c.setAttribute("data-tip",`<b>R${id+1}. ${esc(C.RISKS[id][0])}</b><br>${esc(C.RISKS[id][3])}`); txt(s3,cx,cy+4,"R"+(id+1),{"text-anchor":"middle",class:"val"}); }); });
+  mount("chRisk",s3);
+  $("#risks").innerHTML = "<tr><th>#</th><th>Risk</th><th>L</th><th>I</th><th>Mitigation</th><th>Early warning</th><th>Owner</th></tr>" + C.RISKS.map((r,i)=>`<tr><td>R${i+1}</td><td><b>${esc(r[0])}</b></td><td>${r[1]}</td><td>${r[2]}</td><td>${esc(r[3])}</td><td>${esc(r[4])}</td><td>${esc(r[5])}</td></tr>`).join("");
+}
+
+/* ---------- sandbox ---------- */
+const SL = [
+  ["realisation","Benefit realisation",0.3,1.3,0.05,v=>Math.round(v*100)+"%"],
+  ["delay_q","Delivery delay (quarters)",0,3,1,v=>v.toFixed(0)],
+  ["drift_annual","Market drift, EBITDA per year",-15,3,0.5,v=>fmt(v,1)],
+  ["energy_pct","Energy saving, % of 120",0,12,0.5,v=>v.toFixed(1)+"%"],
+  ["spend_pct","Procurement saving, % of 504",0,4,0.05,v=>v.toFixed(2)+"%"],
+  ["pricing_ac_pct","AC price recovery, % of revenue",0,1.5,0.05,v=>v.toFixed(2)+"%"],
+  ["pricing_other_pct","IEM and SMC price, % of revenue",0,1.5,0.05,v=>v.toFixed(2)+"%"],
+  ["labour_pct","Direct-labour saving, % of 180",0,6,0.25,v=>v.toFixed(2)+"%"],
+  ["backoffice_pct","Back-office saving, % of 153",0,8,0.25,v=>v.toFixed(2)+"%"],
+  ["dio_target","Inventory days target",75,100,1,v=>v.toFixed(0)],
+  ["dso_target","Receivable days target",44,53,0.5,v=>v.toFixed(1)],
+  ["rate_shock_bp","Interest-rate shock (bp)",0,300,25,v=>v.toFixed(0)],
+  ["capex_maint","Maintenance capex per year",30,50,1,v=>v.toFixed(0)],
+  ["capex_expansion","Expansion capex per year",0,25,1,v=>v.toFixed(0)],
+  ["digital_capex_overrun","Digital capex overrun",0,0.6,0.05,v=>Math.round(v*100)+"%"],
+];
+function buildSliders(){
+  $("#sliders").innerHTML = SL.map(([k,n,lo,hi,st])=>`<div class="slider"><label for="sl-${k}">${n}</label><output id="o-${k}"></output><input type="range" id="sl-${k}" min="${lo}" max="${hi}" step="${st}" value="${CUSTOM[k]}"></div>`).join("") +
+    `<div class="slider" style="grid-template-columns:auto 1fr"><input type="checkbox" id="sl-structural" style="grid-column:auto;width:auto"><label for="sl-structural">Include Wave-3 structural options (+15)</label></div>`;
+  SL.forEach(([k,,,,,f])=>{ const i=$("#sl-"+k); $("#o-"+k).textContent=f(+i.value); i.oninput=()=>{ CUSTOM[k]=+i.value; $("#o-"+k).textContent=f(+i.value); setScenario("Custom"); }; });
+  $("#sl-structural").onchange = e => { CUSTOM.structural = e.target.checked; setScenario("Custom"); };
+}
+function syncSliders(){ SL.forEach(([k,,,,,f])=>{ const i=$("#sl-"+k); i.value=CUSTOM[k]; $("#o-"+k).textContent=f(+CUSTOM[k]); }); $("#sl-structural").checked=!!CUSTOM.structural; }
+function renderSand(){
+  const R = current(); const isSQ = SC==="Status quo";
+  const t = [["Exit EBITDA run-rate", fmt(R.ebitda_exit_rr), `${pct(R.margin_exit)} margin`],["18-month FCF", fmt(R.fcf_18m), `${sgn(R.fcf_18m-SQ.fcf_18m)} vs status quo`],["Net debt / EBITDA", fmt(R.nd_ebitda_exit)+"x", `Net debt ${fmt(R.net_debt_exit,0)}`],["FCF breakeven gap", fmt(R.ebitda_exit_rr - R.fcf_breakeven_ebitda), `Breakeven EBITDA ${fmt(R.fcf_breakeven_ebitda)}`]];
+  $("#sTiles").innerHTML = t.map(x=>`<div class="tile"><div class="l">${x[0]}</div><div class="v">${x[1]}</div><div class="d">${x[2]}</div></div>`).join("");
+  const lab=["Q4-25"].concat(IBQ);
+  legend("lgS", [{n:"Selected scenario", c:css("--s1")},{n:"Status quo", c:css("--s2"), dash:true}].slice(isSQ?1:0));
+  lineChart("chS", lab, [{n:"Status quo", v:[25].concat(SQ.rr_q), c:css("--s2"), dash:true}].concat(isSQ?[]:[{n:"Selected scenario", v:[25].concat(R.rr_q), c:css("--s1")}]), {yMin:0, h:220});
+  if (!isSQ) waterfall("chSB", R.exit_bridge, {h:250}); else $("#chSB").innerHTML = "";
+}
+
+/* ---------- wiring ---------- */
+function setScenario(s){
+  SC = s;
+  document.querySelectorAll("#scen button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.s===s)));
+  renderAll();
+}
+function renderAll(){ renderCockpit(); renderFin(); renderLeverTable(); renderSand(); }
+document.querySelectorAll("#scen button").forEach(b => b.onclick = () => { if (b.dataset.s==="Custom") syncSliders(); setScenario(b.dataset.s); });
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#tabs button").forEach(x=>x.setAttribute("aria-selected", String(x===b)));
+  document.querySelectorAll("section.tab").forEach(sct => sct.classList.toggle("on", sct.id === "t-"+b.dataset.t));
+  try { localStorage.setItem("ib-tab", b.dataset.t); } catch(e) {}
+});
+document.querySelectorAll("#labnav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#labnav button").forEach(x=>x.setAttribute("aria-pressed", String(x===b)));
+  document.querySelectorAll("#t-lab .pane").forEach(p => p.classList.toggle("on", p.id === "p-"+b.dataset.p));
+});
+document.querySelectorAll("#tornSel button").forEach(b => b.onclick = () => { tornMode=b.dataset.m; document.querySelectorAll("#tornSel button").forEach(x=>x.setAttribute("aria-pressed", String(x===b))); drawTornado(); });
+$("#resetBtn").onclick = () => { CUSTOM = Object.assign({}, IB_DEFAULTS); syncSliders(); setScenario("Base"); };
+$("#bearBtn").onclick = () => { CUSTOM = Object.assign({}, IB_DEFAULTS, IB_SCENARIOS.Bear); syncSliders(); setScenario("Custom"); };
+$("#bullBtn").onclick = () => { CUSTOM = Object.assign({}, IB_DEFAULTS, IB_SCENARIOS.Bull); syncSliders(); setScenario("Custom"); };
+
+buildSliders();
+renderDiag(); renderLab(); renderPort(); renderRoad(); renderAll();
+try { const t = localStorage.getItem("ib-tab"); if (t) { const b = document.querySelector(`#tabs button[data-t="${t}"]`); if (b) b.click(); } } catch(e) {}
+const hash = (location.hash||"").slice(1); if (hash){ const b = document.querySelector(`#tabs button[data-t="${hash}"]`); if (b) b.click(); }
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { renderDiag(); renderLab(); renderPort(); renderRoad(); renderAll(); });
+new MutationObserver(() => { renderDiag(); renderLab(); renderPort(); renderRoad(); renderAll(); }).observe(document.documentElement, {attributes:true, attributeFilter:["data-theme"]});
+})();
+</script>
+
+</body>
+</html>
